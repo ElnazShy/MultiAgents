@@ -99,19 +99,19 @@ for y in range(m):
     for x in range(n):
         xy = the_map[y][x]
         if xy == 0:
-            print '.',  # space
+            print('.')  # space
         elif xy == 1:
-            print 'I',  # Items
+            print('I')  # Items
         elif xy == 2:
-            print 'S',  # start
+            print('S')  # start
         elif xy == 3:
-            print 'R',  # route
+            print('R')  # route
         elif xy == 4:
-            print 'F',  # finish
+            print('F')  # finish
         elif xy == 8:
-            print 'A',  # Unknown Agent
+            print('A')  # Unknown Agent
         elif xy == 9:
-            print 'M',  # Main Agent
+            print('M')  # Main Agent
     print
 
 true_radius = 0.48
