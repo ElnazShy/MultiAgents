@@ -39,8 +39,8 @@ class simulator:
         return items_count
 
     def update_map(self,old_pos,new_pos):
-        print old_pos,new_pos
-        print "8888888888888888888888888888888888888888888888888888"
+        print(old_pos,new_pos)
+        print("8888888888888888888888888888888888888888888888888888")
         self.draw_map()
         (x,y) =  old_pos
        # print old_pos
@@ -51,7 +51,7 @@ class simulator:
         #print 'the_map[y][x] = 8 ', new_pos
 
         self.the_map[y][x] = 8  # 8 demonstrate the unknown agent on the map
-        print "8888888888888888888888888888888888888888888888888888"
+        print("8888888888888888888888888888888888888888888888888888")
         self.draw_map()
         return
 
@@ -89,9 +89,9 @@ class simulator:
             for x in range(self.n):
                 xy = self.the_map[y][x]
                 if xy == 0:
-                    print '.',  # space
+                    print('.')  # space
                 elif xy == 1:
-                    print 'I',  # Items
+                    print('I')  # Items
                 #elif xy == 2:
                 #    print 'S',  # start
                 #elif xy == 3:
@@ -99,9 +99,9 @@ class simulator:
                 #elif xy == 4:
                  #   print 'F',  # finish
                 elif xy == 8:
-                    print 'A',  # Unnown Agent
+                    print('A')  # Unnown Agent
                 elif xy == 9:
-                    print 'M',  # Main Agent
+                    print('M')  # Main Agent
             print
 
     def set_map(self, the_map):
@@ -176,7 +176,7 @@ class simulator:
             item_index = unknown_agent.is_item_nearby(self.items)
 
             if item_index != -1:
-                print '****** load'
+                print('****** load')
 
                 # load item and remove it from map and get the direction to reach the item.
                 (dx,dy) = self.load_item(unknown_agent,item_index)
@@ -265,7 +265,7 @@ class simulator:
 
             # If agent is next to the target item, it should load it.
             if self.agent_next_item((xA, yA), (xB, yB)):
-                print '****** load'
+                print('****** load')
 
                 # load item and remove it from map and get the direction to reach the item.
 

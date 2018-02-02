@@ -53,13 +53,13 @@ def initialize_items_agents_notrandom(n,m):
     main_agent = agent.Agent(x, y,'l1',1)
     agents.append(main_agent)
     the_map[y][x] = 9
-    print the_map
+    print(the_map)
 
 
 def initialize_items_agents( n, m):
     # generating choices for random selection
     global the_map
-    print the_map
+    print(the_map)
     sf = []
     for i in range(0, n):
         for j in range(0, m):
@@ -145,11 +145,11 @@ while t < 10:
     # moving the unknown agent with true parameters
     unknown_agent = real_sim.run_and_update(unknown_agent)
     #real_sim.draw_map()
-    print real_sim.items_left()
+    print(real_sim.items_left())
 
     # map changes after move of unknown agent
     sim_history.append(real_sim)
-    t = t + 1
+    t +=  1
 
    # unknown_action_prob = unknown_agent.get_action_probability(unknown_agent.next_action)
    # new_estimated_parameters = param_estim.process_parameter_estimations(t, prev_sim, prev_position, unknown_agent.next_action)
@@ -157,7 +157,7 @@ while t < 10:
     #real_sim.mcts_move(true_parameters)
 
 real_sim.draw_map()
-print "True parameters: " ,true_level,true_radius,true_angle
+print("True parameters: " ,true_level,true_radius,true_angle)
 #print "last new_estimated_parameters", new_estimated_parameters
 
 
