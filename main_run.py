@@ -20,7 +20,7 @@ agents = []
 the_map = []
 
 
-def initialize_items_agents_notrandom(n,m):
+def initialize_items_agents_notrandom(n, m):
     # generating choices for random selection
     global the_map
 
@@ -45,18 +45,18 @@ def initialize_items_agents_notrandom(n,m):
 
     # creating agent
     (x, y) = (4,4)
-    unknown_agent = agent.Agent(x, y,'l1',0)
+    unknown_agent = agent.Agent(x, y, 'l1', 0)
     the_map[y][x] = 8
     agents.append(unknown_agent)
 
     (x, y) = (1,1)
-    main_agent = agent.Agent(x, y,'l1',1)
+    main_agent = agent.Agent(x, y, 'l1', 1)
     agents.append(main_agent)
     the_map[y][x] = 9
     print(the_map)
 
 
-def initialize_items_agents( n, m):
+def initialize_items_agents(n, m):
     # generating choices for random selection
     global the_map
     print(the_map)
@@ -75,7 +75,7 @@ def initialize_items_agents( n, m):
 
     # creating agent
     (x, y) = random.choice(sf)
-    unknown_agent = agent.Agent(x, y,'l1',0)
+    unknown_agent = agent.Agent(x, y, 'l1', 0)
     the_map[x][y] = 8
 
     agents.append(unknown_agent,1)
@@ -83,12 +83,12 @@ def initialize_items_agents( n, m):
     the_map[x][y] = 9
 
     (x, y) = random.choice(sf)
-    main_agent = agent.Agent(x, y,'l1',1)
+    main_agent = agent.Agent(x, y, 'l1', 1)
     agents.append(main_agent)
     sf.remove((x, y))
 
 
-def create_empty_map(n,m):
+def create_empty_map(n, m):
     # create the map
 
     row = [0] * n
@@ -118,6 +118,7 @@ sim_history.append(the_map)
 # ==============parameter estimation initialisation=====================================================
 
 param_estim = parameter_estimation.ParameterEstimation()
+# Initialise random values for parameters.
 param_estim.estimation_initialisation()
 
 # ================create unknown agent  ================================================================
@@ -149,13 +150,10 @@ while t < 10:
 
     # map changes after move of unknown agent
     sim_history.append(real_sim)
-    t +=  1
-
-   # unknown_action_prob = unknown_agent.get_action_probability(unknown_agent.next_action)
-   # new_estimated_parameters = param_estim.process_parameter_estimations(t, prev_sim, prev_position, unknown_agent.next_action)
-
-    #real_sim.mcts_move(true_parameters)
-
+    t += 1
+    unknown_action_prob = unknown_agent.get_action_probability(unknown_agent.next_action)
+    new_estimated_parameters = param_estim.process_parameter_estimations(t, prev_sim, prev_position, unknown_agent.next_action)
+    real_sim.mcts_move(true_parameters)
 real_sim.draw_map()
 print("True parameters: " ,true_level,true_radius,true_angle)
 #print "last new_estimated_parameters", new_estimated_parameters

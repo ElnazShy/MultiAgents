@@ -42,7 +42,6 @@ class ParameterEstimation:
         return tmp_parameter
 
     # Initialisation random values for parameters of each type and probability of actions in time step 0
-
     def estimation_initialisation(self):
         # P(teta|H) in t = 0
         self.p_type_l1.append(round(random.uniform(0, 1), 1))
@@ -90,6 +89,7 @@ class ParameterEstimation:
         #print 'gathered data :     ', D
        # print '******End of generating data for updating parameter *******'
        # print '*********************************************************************************'
+        print("Parameters D: {}".format(D))
         return D
 
     @staticmethod
@@ -196,7 +196,7 @@ class ParameterEstimation:
     def UCB_selection(self):
         return ['l1']
 
-    def process_parameter_estimations(self, time_step,tmp_sim,  agent_position , action):
+    def process_parameter_estimations(self, time_step, tmp_sim,  agent_position, action):
 
         # Start parameter estimation
         selected_types = self.UCB_selection()

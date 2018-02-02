@@ -91,10 +91,13 @@ class a_star:
                 # by following the directions
                 path = ''
                 while not (x == xStart and y == yStart):
+                    # j is an int
                     j = dir_map[y][x]
 
                     c = str((j + self.directions / 2) % self.directions)
                     path = c + path
+                    print(self.dx)
+                    # self.dx is a list
                     x += self.dx[j]
                     y += self.dy[j]
 
