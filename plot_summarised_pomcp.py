@@ -9,17 +9,17 @@ from scipy import mean
 information = []
 alpha = 0.01
 
-PLOTS_DIR = "./t_results"
+PLOTS_DIR = "./10_results"
 DATA_TYPE = 'MDP'
 #DATA_TYPE = 'POMCP'
-RADIUS = ['7']
+RADIUS = ['3']
 P_values = {}
-parameter_estimation_mode_set = ['AGA', 'ABU', 'MIN']
+parameter_estimation_mode_set = ['AGA', 'ABU', 'MIN','POMCP']
 
-algorithms = ["aga", "abu", "oge"]
-algorithms_labels = ["AGA", "ABU", "OGE"]
-algorithms_symbol = ["^", "v", "o"]
-algorithm_colors = ["#3F5D7D","#37AA9C","#F66095"]
+algorithms = ["aga", "abu", "oge","pomcp"]
+algorithms_labels = ["AGA", "ABU", "OGE","POMCP"]
+algorithms_symbol = ["^", "v", "o","s"]
+algorithm_colors = ["#3F5D7D","#37AA9C","#F66095","#DACE14"]
 
 n_agents = ['1','3','5','7','10']
 n_size = ['20']
@@ -68,6 +68,8 @@ def fill_info(filename,na_i,sz_i,observation_type):
     info_item['agent_numbers'] = na
     info_item['item_numbers'] = ni
 
+    # --------------------- AGA -----------------------------------------------------
+
     info_item['aga_error_mean'] = (mean(info.aga_levels) +
                                    mean(info.aga_radius) +
                                    mean(info.aga_angles)) / 3
@@ -90,6 +92,7 @@ def fill_info(filename,na_i,sz_i,observation_type):
     performance_mean[na_i][sz_i][0] = info_item['aga_time_steps']
     performance_confident_interval[na_i][sz_i][0] = calc_CI(info.AGA_timeSteps)
 
+    # --------------------- ABU -----------------------------------------------------
     info_item['abu_error_mean'] = (mean(info.abu_levels) + mean(info.abu_radius)
                                    + mean(info.abu_angles)) / 3
 
@@ -110,6 +113,8 @@ def fill_info(filename,na_i,sz_i,observation_type):
     performance_mean[na_i][sz_i][1] = info_item['abu_time_steps']
     performance_confident_interval[na_i][sz_i][1] = calc_CI(info.ABU_timeSteps)
 
+
+    # --------------------- OGE -----------------------------------------------------
     info_item['oge_error_mean'] = (mean(info.OGE_levels) + mean(info.OGE_radius)
                                    + mean(info.OGE_angles)) / 3
 
@@ -141,10 +146,31 @@ def fill_info(filename,na_i,sz_i,observation_type):
     performance_mean[na_i][sz_i][2] = info_item['oge_time_steps'] - 1
     performance_confident_interval[na_i][sz_i][2] = calc_CI(info.OGE_timeSteps) - 1
 
-    abu_pvalue = independent_ttest(info.ABU_timeSteps, info.OGE_timeSteps)
-    aga_pvalue = independent_ttest(info.AGA_timeSteps, info.OGE_timeSteps)
-    ABU_pvalue[na_i][sz_i] = abu_pvalue
-    AGA_pvalue[na_i][sz_i] = aga_pvalue
+    # --------------------- POMCP -----------------------------------------------------
+    info_item['pomcp_error_mean'] = (mean(info.pomcp_levels) + mean(info.pomcp_radius)
+                                     + mean(info.pomcp_angles)) / 3
+
+    info_item['pomcp_error_ci'] = (mean(info.pomcp_levels_ci) + mean(info.pomcp_radius_ci)
+                                   + mean(info.pomcp_angles_ci)) / 3
+
+    error_mean[na_i][sz_i][3] = info_item['pomcp_error_mean']
+    error_confident_interval[na_i][sz_i][3] = info_item['pomcp_error_ci']
+
+    pomcp_tp = np.array(info.pomcp_typeProbHistory)
+    pomcp_tp = np.array(pomcp_tp)
+    pomcp_tp = pomcp_tp.mean(axis=0)
+    info_item['pomcp_type_probability_error'] = np.array([1 - pomcp_tp[t] for t in range(info.threshold)])
+    type_mean[na_i][sz_i][3] = mean(info_item['pomcp_type_probability_error'])
+    type_confident_interval[na_i][sz_i][3] = calc_CI(info_item['pomcp_type_probability_error'])
+
+    info_item['pomcp_time_steps'] = np.mean(np.array(info.pomcp_timeSteps))
+    performance_mean[na_i][sz_i][3] = info_item['pomcp_time_steps']
+    performance_confident_interval[na_i][sz_i][3] = calc_CI(info.pomcp_timeSteps)
+
+    # abu_pvalue = independent_ttest(info.ABU_timeSteps, info.OGE_timeSteps)
+    # aga_pvalue = independent_ttest(info.AGA_timeSteps, info.OGE_timeSteps)
+    # ABU_pvalue[na_i][sz_i] = abu_pvalue
+    # AGA_pvalue[na_i][sz_i] = aga_pvalue
 
 
 def calc_CI(type_hist):
@@ -226,22 +252,14 @@ def plot_multiple_agents_performance():
                        label=algorithms_labels[a], marker=algorithms_symbol[a],color = algorithm_colors[a])
 
     plt.legend(loc=0)
-    #plt.ylim([15, 120]) #10 all
     #plt.ylim([18, 36]) # 10-7 less
     #plt.ylim([18, 60])  # 10-7 all
-    #plt.ylim([19, 36])  # 10-5 -less
+    # plt.ylim([19, 36])  # 10-5 -less
     #plt.ylim([19, 65])  # 10-5 -all
-    #plt.ylim([18, 61])  # 10-3 all
-    #plt.ylim([18,35])  # 10-3 less
+    #plt.ylim([18, 65])  # 10-3 all
+    #plt.ylim([55, 230])  # 20-3 all
     #plt.ylim([48,200]) #20 all
-    #plt.ylim([58, 230])  # 20-3 all
-    #plt.ylim([58, 115])  # 20-3 less
-    #plt.ylim([58, 250])  # 20-5 all
-    #plt.ylim([58, 115])  # 20-5 less
-    # plt.ylim([58, 250])  # 20-5 all
-    #plt.ylim([58, 115])  # 20-7 less
-    #plt.ylim([58, 250])  # 20-7 all
-
+    #plt.ylim([15, 120]) #10 all
     plt.xlim([int(n_agents[0]) - 1, int(n_agents[-1]) + 1])
     plt.xlabel("Number of Agents")
     plt.ylabel("Number of Iterations")
@@ -249,44 +267,6 @@ def plot_multiple_agents_performance():
         plt.savefig(PLOTS_DIR+"/summarized_plots/performance_multiple_agents" + n_size[0] + "_radius" + RADIUS[0] + ".pdf", bbox_inches='tight')
     else:
         plt.savefig(PLOTS_DIR + "/summarized_plots/performance_multiple_agents" + n_size[0] + ".pdf", bbox_inches='tight')
-
-def plot_multiple_agents_performance_zoom():
-    plt.figure(figsize=(4, 3.0))
-
-    for a in range(len(parameter_estimation_mode_set)):
-        plt.errorbar(n_agents, performance_mean[:, 0, a],
-                     yerr=[m - n for m, n in zip(performance_confident_interval[:, 0, a],
-                                                 performance_mean[:, 0, a])],
-                     label=algorithms_labels[a], marker=algorithms_symbol[a], color=algorithm_colors[a])
-
-    #plt.legend(loc=0)
-    plt.legend(frameon=False, loc='lower center', ncol=3,fontsize ='x-small')
-
-    plt.xlim([int(n_agents[0]) - 1, int(n_agents[-1]) + 1])
-    plt.xlabel("Number of Agents")
-    plt.ylabel("Number of Iterations")
-
-    less_n_agent = n_agents[1:]
-    ax2 = plt.axes([.55, .4, .3, .3])
-    for a in range(len(parameter_estimation_mode_set)):
-        plt.errorbar(less_n_agent, performance_mean[1:, 0, a],
-                     yerr=[m - n for m, n in zip(performance_confident_interval[1:, 0, a],
-                                                 performance_mean[1:, 0, a])],
-                     label=algorithms_labels[a], marker=algorithms_symbol[a], color=algorithm_colors[a])
-
-    plt.setp(ax2, xticks=[2, 4, 6,8, 10,12], yticks=[45, 110])
-    plt.title("Zoom")
-
-    if DATA_TYPE == 'POMCP':
-        plt.savefig(
-            PLOTS_DIR + "/summarized_plots/zoom_performance_multiple_agents" + n_size[0] + "_radius" + RADIUS[0] + ".pdf",
-            bbox_inches='tight')
-    else:
-        plt.savefig(PLOTS_DIR + "/summarized_plots/zoom_performance_multiple_agents" + n_size[0] + ".pdf",
-                    bbox_inches='tight')
-
-
-
 
 
 def plot_multiple_agents_error():
@@ -388,11 +368,10 @@ def plot_multiple_size_performance():
                     bbox_inches='tight')
 
 
-
 #create_log_file(30)
-plot_multiple_agents_performance_zoom()
-#plot_multiple_agents_error()
-#plot_multiple_agents_performance()
-#plot_multiple_agents_type_error()
+plot_multiple_agents_error()
+plot_multiple_agents_performance()
+plot_multiple_agents_type_error()
 # plot_multiple_size_performance()
 # plot_multiple_size_error()
+
