@@ -3,6 +3,7 @@ import numpy as np
 import subprocess
 
 from copy import deepcopy
+from copy import copy
 from math import sqrt
 from scipy.stats import sem, t
 from scipy import mean
@@ -23,43 +24,58 @@ class Information:
 		self.AGA_max_len_hist = 0
 		self.ABU_max_len_hist = 0
 		self.OGE_max_len_hist = 0
+		self.pomcp_max_len_hist = 0
 
 		self.AGA_errors = list()
 		self.ABU_errors = list()
 		self.OGE_errors = list()
+		self.pomcp_errors = list()
+
 
 		self.AGA_mean_len_hist = 0
 		self.ABU_mean_len_hist = 0
+		self.pomcp_mean_len_hist = 0
 		self.OGE_mean_len_hist = 0
 
 		self.AGA_std_len_hist = 0
 		self.ABU_std_len_hist = 0
 		self.OGE_std_len_hist = 0
+		self.pomcp_std_len_hist = 0
 
 		self.AGA_ci_len_hist = 0
 		self.ABU_ci_len_hist = 0
 		self.OGE_ci_len_hist = 0
+		self.pomcp_ci_len_hist = 0
+
 
 		self.TRUE_timeSteps = list()
 		self.AGA_timeSteps = list()
 		self.ABU_timeSteps = list()
 		self.OGE_timeSteps = list()
+		self.pomcp_timeSteps = list()
 
 		self.AGA_estimationHist = list()
 		self.ABU_estimationHist = list()
 		self.OGE_estimationHist = list()
+		self.pomcp_estimationHist = list()
 
 		self.AGA_typeProbHistory= list()
 		self.ABU_typeProbHistory= list()
 		self.OGE_typeProbHistory= list()
+		self.pomcp_typeProbHistory = list()
 
 		self.AGA_trueParameter = list()
 		self.ABU_trueParameter = list()
 		self.OGE_trueParameter = list()
+		self.pomcp_trueParameter = list()
 
 		self.aga_levels, self.aga_levels_std_dev, self.aga_levels_ci = list(), list(), list()
 		self.aga_radius, self.aga_radius_std_dev, self.aga_radius_ci = list(), list(), list()
 		self.aga_angles, self.aga_angles_std_dev, self.aga_angles_ci = list(), list(), list()
+		self.pomcp_types_ci = list()
+
+
+                self.AGA_types_ci= list()
 		
 		self.abu_levels, self.abu_levels_std_dev, self.abu_levels_ci = list(), list(), list()
 		self.abu_radius, self.abu_radius_std_dev, self.abu_radius_ci = list(), list(), list()
@@ -68,6 +84,10 @@ class Information:
 		self.OGE_levels, self.OGE_levels_std_dev, self.OGE_levels_ci = list(), list(), list()
 		self.OGE_radius, self.OGE_radius_std_dev, self.OGE_radius_ci = list(), list(), list()
 		self.OGE_angles, self.OGE_angles_std_dev, self.OGE_angles_ci = list(), list(), list()
+
+		self.pomcp_levels, self.pomcp_levels_std_dev, self.pomcp_levels_ci = list(), list(), list()
+		self.pomcp_radius, self.pomcp_radius_std_dev, self.pomcp_radius_ci = list(), list(), list()
+		self.pomcp_angles, self.pomcp_angles_std_dev, self.pomcp_angles_ci = list(), list(), list()
 		
 	@staticmethod
 	def calcConfInt(p):
@@ -91,7 +111,7 @@ class Information:
 		return True
 
 	def normalise(self):
-		max_len = max(self.AGA_max_len_hist,self.ABU_max_len_hist,self.OGE_max_len_hist,self.TRUE_max_len_hist)
+		max_len = max(self.AGA_max_len_hist,self.ABU_max_len_hist,self.OGE_max_len_hist,self.pomcp_max_len_hist)
 
 		# print 'max_len', max_len
 
@@ -103,6 +123,9 @@ class Information:
 
 		self.OGE_errors = self.normalise_arrays(max_len,self.OGE_errors)
 		self.OGE_typeProbHistory  = self.normalise_arrays(max_len,self.OGE_typeProbHistory)
+
+		self.pomcp_errors = self.normalise_arrays(max_len, self.pomcp_errors)
+		self.pomcp_typeProbHistory = self.normalise_arrays(max_len, self.pomcp_typeProbHistory)
 
 
 
@@ -117,6 +140,8 @@ class Information:
 	def extract(self):	
 		global LEVEL, RADIUS, ANGLE
 		# print '*** AGA - extracting level, radius and angle info ***'
+       #         z, x, self.AGA_types_ci = self.extract_parameter_errors(self.AGA_typeProbHistory,
+      #                                                      ANGLE)
 		self.aga_levels, self.aga_levels_std_dev, self.aga_levels_ci = self.extract_parameter_errors(self.AGA_errors,LEVEL)
 		# print 'AGA - levels OK'
 		self.aga_radius, self.aga_radius_std_dev, self.aga_radius_ci = self.extract_parameter_errors(self.AGA_errors,RADIUS)
@@ -138,9 +163,11 @@ class Information:
 		self.abu_levels, self.abu_levels_std_dev, self.abu_levels_ci = self.extract_parameter_errors(self.ABU_errors,LEVEL)
 		# print 'ABU - levels OK'
 		self.abu_radius, self.abu_radius_std_dev, self.abu_radius_ci = self.extract_parameter_errors (self.ABU_errors,RADIUS)
-		# print 'ABU - radius OK'
+		# print 'ABU - radius O
 		self.abu_angles, self.abu_angles_std_dev, self.abu_angles_ci = self.extract_parameter_errors(self.ABU_errors,ANGLE)
 		# print 'ABU - angles OK'
+
+
 
 
 		self.abu_level_error_mean = np.mean(np.array(self.abu_levels))
@@ -171,6 +198,30 @@ class Information:
 		self.oge_angle_error_ci = np.std(np.array(self.OGE_angles))
 		self.oge_radius_error_ci = np.std(np.array(self.OGE_radius))
 		self.oge_type_probability_ci = np.std(np.array(self.OGE_typeProbHistory))
+
+		if len(self.pomcp_errors)>0:
+			# print '*** pomcp - extracting level, radius and angle info ***'
+			self.pomcp_levels, self.pomcp_levels_std_dev, self.pomcp_levels_ci = self.extract_parameter_errors(self.pomcp_errors,
+																										 LEVEL)
+			# print 'pomcp - levels OK'
+			self.pomcp_radius, self.pomcp_radius_std_dev, self.pomcp_radius_ci = self.extract_parameter_errors(self.pomcp_errors,
+																										 RADIUS)
+			# print 'pomcp - radius OK'
+			self.pomcp_angles, self.pomcp_angles_std_dev, self.pomcp_angles_ci = self.extract_parameter_errors(self.pomcp_errors,
+																										 ANGLE)
+			# print 'pomcp - angles OK'
+
+		#	z, x, self.pomcp_types_ci = self.extract_parameter_errors(self.pomcp_typeProbHistory,
+																										 
+			self.pomcp_level_error_mean = np.mean(np.array(self.pomcp_levels))
+			self.pomcp_angle_error_mean = np.mean(np.array(self.pomcp_angles))
+			self.pomcp_radius_error_mean = np.mean(np.array(self.pomcp_radius))
+			self.pomcp_type_probability_mean = np.mean(np.array(self.pomcp_typeProbHistory))
+			self.pomcp_level_error_ci = np.std(np.array(self.pomcp_levels))
+			self.pomcp_angle_error_ci = np.std(np.array(self.pomcp_angles))
+			self.pomcp_radius_error_ci = np.std(np.array(self.pomcp_radius))
+			self.pomcp_type_probability_ci = np.std(np.array(self.pomcp_typeProbHistory))
+
 		
 
 	def extract_parameter_errors(self,main_error,parameter):

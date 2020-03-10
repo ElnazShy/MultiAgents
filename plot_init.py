@@ -24,6 +24,11 @@ def read_files(root_dir,size,nagents, nitems,radius=None):
     ABU_min_steps = 1000
     ABU_min_root = ''
     ABU_max_root = ''
+    pomcp_min_time_steps = []
+    pomcp_max_steps = 0
+    pomcp_min_steps = 1000
+    pomcp_min_root = ''
+    pomcp_max_root = ''
 
     CO = 'NONE'
     for root, dirs, files in os.walk(root_dir):
@@ -126,6 +131,17 @@ def read_files(root_dir,size,nagents, nitems,radius=None):
                                                 ABU_min_steps = estimationDictionary['timeSteps']
                                                 ABU_min_root = root
 
+                                        if systemDetails['parameter_estimation_mode'] == 'POMCP':
+                                            x['root'] = root
+                                            x['step'] = estimationDictionary['timeSteps']
+                                            pomcp_min_time_steps.append(x)
+                                            if estimationDictionary['timeSteps'] > pomcp_max_steps:
+                                                pomcp_max_steps = estimationDictionary['timeSteps']
+                                                pomcp_max_root = root
+                                            if estimationDictionary['timeSteps'] < pomcp_min_steps:
+                                                pomcp_min_steps = estimationDictionary['timeSteps']
+                                                pomcp_min_root = root
+
                                         if root_dir == 'po_outputs':
                                             if radius == str(int(systemDetails['mainAgentRadius'])):
                                                 results.append(estimationDictionary)
@@ -138,9 +154,9 @@ def read_files(root_dir,size,nagents, nitems,radius=None):
     print 'MIN'
     print 'Max: ', MIN_max_steps, ' Path: ', MIN_max_root
     print 'Min: ', MIN_min_steps, ' Path: ', MIN_min_root
-    for m in MIN_min_time_steps:
-        if int(m['step']) > 60:
-           print m
+    # for m in MIN_min_time_steps:
+    #     if int(m['step']) > 60:
+    #        print m
     print '-----------------------------------------------'
     print 'AGA'
     print 'Max: ', AGA_max_steps, ' Path: ', AGA_max_root
@@ -150,8 +166,13 @@ def read_files(root_dir,size,nagents, nitems,radius=None):
     print 'Max: ', ABU_max_steps, ' Path: ', ABU_max_root
     print 'Min: ', ABU_min_steps, ' Path: ', ABU_min_root
     print '-----------------------------------------------'
-
-
+    print 'POMCP'
+    print 'Max: ', pomcp_max_steps, ' Path: ', pomcp_max_root
+    print 'Min: ', pomcp_min_steps, ' Path: ', pomcp_min_root
+    print '-----------------------------------------------'
+    for m in pomcp_min_time_steps:
+        if int(m['step']) > 40 and int(m['step'])<50:
+            print m
     sys.stdout.write("Progress: %.1f%% | file #%d      \n" % (progress,count) )
     return results
 
@@ -233,10 +254,38 @@ def extract_information(results,name,radius=None):
                 # print 'OGE', result['path'], error
                 info.OGE_errors.append(error)
 
+        if result['parameter_estimation_mode'] == 'POMCP':
+            if radius != None:
+                # print radius, result['mainAgentRadius'], radius == result['mainAgentRadius']
+                if radius == result['mainAgentRadius']:
+                    if len(result['typeProbHistory']) > info.pomcp_max_len_hist:
+                        info.pomcp_max_len_hist = len(result['typeProbHistory'])
+
+                    info.pomcp_timeSteps.append(result['timeSteps'])
+                    info.pomcp_typeProbHistory.append(result['typeProbHistory'])
+                    info.pomcp_estimationHist.append(result['historyParameters'])
+                    info.pomcp_trueParameter.append(result['trueParameters'])
+                    error = calculate_error(result['trueParameters'], result['historyParameters'])
+                    # print 'pomcp', result['path'], error
+                    info.pomcp_errors.append(error)
+            else:
+                if len(result['typeProbHistory']) > info.pomcp_max_len_hist:
+                    info.pomcp_max_len_hist = len(result['typeProbHistory'])
+
+                info.pomcp_timeSteps.append(result['timeSteps'])
+                info.pomcp_typeProbHistory.append(result['typeProbHistory'])
+                info.pomcp_estimationHist.append(result['historyParameters'])
+                info.pomcp_trueParameter.append(result['trueParameters'])
+                error = calculate_error(result['trueParameters'], result['historyParameters'])
+
+                # print 'pomcp', result['path'], error
+                info.pomcp_errors.append(error)
+
     # print name
     print "number of AGA: ",len(info.AGA_timeSteps)
     print "number of ABU: ", len(info.ABU_timeSteps)
     print "number of OGE: ", len(info.OGE_timeSteps)
+    print "number of POMCP: ", len(info.pomcp_timeSteps)
     return info
 
 

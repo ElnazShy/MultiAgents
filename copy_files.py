@@ -19,8 +19,8 @@ def copy(src, dest):
         else:
             print('Directory not copied. Error: %s' % e)
 
-count = 1 #UCT
-#count = 29100  #POMCP
+count = 1000 #UCT
+#count = 40400  #POMCP
 f_count = 0
 for root, dirs, files in os.walk(root_dir):
         if 'pickleResults.txt' in files:
@@ -35,7 +35,7 @@ for root, dirs, files in os.walk(root_dir):
                 simHeight = systemDetails['simHeight']
                 agentsCounts = str(systemDetails['agentsCounts'])
                 itemsCounts = str(systemDetails['itemsCounts'])
-		round = str(systemDetails['round_count'])
+                round = str(systemDetails['round_count'])
 
                 if files_type =='POMCP':
                     radius = str(int(systemDetails['mainAgentRadius']))

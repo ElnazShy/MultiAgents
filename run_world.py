@@ -46,9 +46,9 @@ apply_adversary = False
 if len(sys.argv) > 1:
     input_folder = sys.argv[1]
 else:
-    input_folder = ""
+    #input_folder = ""
     #input_folder = "inputs/test/"
-    #input_folder = "inputs/FO_O_POMCP/"
+    input_folder = "inputs/FO_O_POMCP/"
 
 if len(sys.argv) > 2:
     main_output_folder = sys.argv[2]
@@ -267,7 +267,7 @@ while round <= round_count:
         # print 'Main colllllaboration'
         main_sim.do_collaboration()
         main_sim.main_agent.update_unknown_agents_status(main_sim)
-        # main_sim.draw_map()
+        main_sim.draw_map()
         log.write_map(log_file,main_sim)
 
         # 6. Estimating
