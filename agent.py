@@ -606,6 +606,54 @@ class Agent:
         else:
             return position.position(-1, -1)
 
+    def choose_target_l5(self,items,agents):
+        # 1. Initialising the support variables
+        max_index, max_level = -1, -1
+
+        # 2. Searching for highest level item above own level
+        for i in range(0, len(self.visible_items)):
+            if self.visible_items[i].level > max_level:
+                if self.visible_items[i].level > self.level:
+                    max_level = self.visible_items[i].level
+                    max_index = i
+
+        # - return the result if the item was found
+        if max_index > -1:
+            return self.visible_items[max_index].position
+        else:
+            return position.position(-1, -1)
+
+    def choose_target_l4(self,items,agents):
+        # 1. Initialising the support variables
+        min_index, min_level = -1, 999999
+
+        # 2. Searching for lowest level item
+        for i in range(0, len(self.visible_items)):
+            if self.visible_items[i].level < min_level:
+                min_level = self.visible_items[i].level
+                min_index = i
+
+        # - return the result if the item was found
+        if min_index != -1:
+            return self.visible_items[min_index].position
+        else:
+            return position.position(-1, -1)
+
+    def choose_target_l3(self, items, agents):
+        # 1. Initialising the support variables
+        max_index, min_distance = -1, 999999
+
+        # 2. Searching for min distance item
+        for i in range(0, len(self.visible_items)):
+            if self.distance(self.visible_items[i]) < min_distance:
+                min_distance = self.distance(self.visible_items[i])
+                min_index = i
+
+        if min_index == -1:
+            return position.position(-1, -1)
+        else:
+            return self.visible_items[min_index]
+
     ####################################################################################################################
     def choose_target_l2(self,items,agents):
         # 1. Initialising the support variables
