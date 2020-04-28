@@ -54,6 +54,14 @@ class Information:
 		self.OGE_timeSteps = list()
 		self.pomcp_timeSteps = list()
 
+
+		self.TRUE_computationalTime = list()
+		self.AGA_computationalTime = list()
+		self.ABU_computationalTime = list()
+		self.OGE_computationalTime = list()
+		self.pomcp_computationalTime = list()
+
+
 		self.AGA_estimationHist = list()
 		self.ABU_estimationHist = list()
 		self.OGE_estimationHist = list()

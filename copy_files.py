@@ -3,7 +3,7 @@ import shutil
 import os
 import pickle
 
-root_dir = "outputs"
+root_dir = "m_less_1"
 files_type = "UCT"
 #
 #root_dir = "po_outputs"
