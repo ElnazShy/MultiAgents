@@ -1,5 +1,5 @@
 from random import randint
-from random import choice
+from random import choice, sample
 import random
 import csv
 import os
@@ -86,16 +86,17 @@ def selectType():
 
 def main():
 	# 0. Checking the terminal input
-	if len(sys.argv) != 6:
-		print 'usage: python scenario_generator.py [size] [nagents] [nitems] [map_count] [type_estimation_mode]'
+	if len(sys.argv) != 7:
+		print 'usage: python scenario_generator.py [size] [nagents] [nitems] [map_count] [type_estimation_mode] [cooperative_flag]'
 		exit(0)
 
 	# 1. Taking the information
 	size = int(sys.argv[1])
 	nagents = int(sys.argv[2])
 	nitems = int(sys.argv[3])
-	map_count = sys.argv[-1]
+	map_count = sys.argv[4]
 	tem = sys.argv[5]
+	cooperative_flag = True if sys.argv[6] == 'True' else False
 	print 'type estimation mode:',tem
 
 	# 2. Defining the simulation
@@ -107,16 +108,23 @@ def main():
 	mainx,mainy,grid = generateRandomNumber(grid,grid_size)
 	mainDirection    = choice(possible_directions)
 	mainType  = 'm'
-	mainLevel = 1
+	if cooperative_flag:
+		mainLevel = round(random.uniform(0.1,0.5), 3)
+	else:
+		mainLevel = 1
 	MAIN = ['main',mainx,mainy,mainDirection,mainType,mainLevel]
 
 	# e. defining the commum agents
-	AGENTS = []
+	AGENTS, LEVELS = [], []
 	for agent_idx in range(nagents):
 		agentx,agenty,grid = generateRandomNumber(grid,grid_size)
 		agentDirection = choice(possible_directions)
 		agentType = selectType()
-		agentLevel = round(random.uniform(0.5,1), 3)
+		if cooperative_flag:
+			agentLevel = round(random.uniform(0.1,0.5), 3)
+			LEVELS.append(agentLevel)
+		else:
+			agentLevel = round(random.uniform(0.5,1), 3)
 		agentRadius = round(random.uniform(0.5,1), 3)
 		agentAngle = round(random.uniform(0.5,1), 3)
 		AGENTS.append(['agent'+ str(agent_idx),str(agent_idx),agentx,agenty,agentDirection,agentType,agentLevel,agentRadius,agentAngle])
@@ -124,7 +132,11 @@ def main():
 	ITEMS = []
 	for item_idx in range(nitems):
 		itemx,itemy,grid = generateRandomNumber(grid,grid_size)
-		itemLevel = round(random.uniform(0,0.8), 3)
+		if cooperative_flag:
+			sampledLevels = sample(LEVELS,2)
+			itemLevel = round(random.uniform(max(sampledLevels)+0.001,sum(sampledLevels))-0.001, 3)
+		else:
+			itemLevel = round(random.uniform(0,0.8), 3)
 		ITEMS.append(['item'+ str(item_idx),itemx,itemy,itemLevel])
 
 	# 3. Creating the possible configuration files
