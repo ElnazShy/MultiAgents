@@ -641,7 +641,7 @@ class Agent:
 
     def choose_target_l3(self, items, agents):
         # 1. Initialising the support variables
-        max_index, min_distance = -1, 999999
+        min_index, min_distance = -1, 999999
 
         # 2. Searching for min distance item
         for i in range(0, len(self.visible_items)):

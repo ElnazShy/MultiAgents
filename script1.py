@@ -8,15 +8,15 @@ from numpy import pi
 
 # 0. General Settings
 map_count = 0
-number_of_tests = 20
+number_of_tests = 1
 
 
-square_grid_size = ['10']
+square_grid_size = ['7']
 number_of_agents = ['5']
-number_of_items = ['10']#,'20','25']
+number_of_items = ['5']#,'20','25']
 
 # 1. Defining the experiment type# 1. Defining the experiment type
-experiment_type_set = ['POMCP','ABU', 'AGA', 'MIN']
+experiment_type_set = ['ABU', 'AGA', 'MIN','POMCP']
 
 type_estimation_mode_set = ['BPTE']
 # 2. Starting the experiment
