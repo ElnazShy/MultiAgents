@@ -741,6 +741,18 @@ class Agent:
         elif self.agent_type == "l2":
             return self.choose_target_l2(items,agents)
 
+        # 2. Choosing target (item) if type L2
+        elif self.agent_type == "l3":
+            return self.choose_target_l3(items,agents)
+
+        # 2. Choosing target (item) if type L2
+        elif self.agent_type == "l4":
+            return self.choose_target_l4(items,agents)
+
+        # 2. Choosing target (item) if type L2
+        elif self.agent_type == "l5":
+            return self.choose_target_l5(items,agents)
+
         # 3. Choosing target (agent) if type F1
         elif self.agent_type == "f1":
             return self.choose_target_f1(items,agents)
@@ -750,6 +762,7 @@ class Agent:
             return self.choose_target_f2(items,agents)
 
         else:
+            #   print 'TypeError: Invalid Type\n\ttype',self.agent_type,'is invalid.'
             return position.position(-1, -1)
 
 

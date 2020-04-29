@@ -15,7 +15,7 @@ iteration_max_set = ['100']
 # (2) SIM.CSV - INFORMATION
 # Defining the parameter of simulation file
 possible_directions = ['N','S','E','W']
-agent_types 		= ['l1','l2']
+agent_types 		= ['l1','l2','l3','l4','l5']
 selected_types 		= [False,False]
 
 experiment_type_set = ['POMCP', 'ABU', 'AGA', 'MIN']
@@ -119,7 +119,7 @@ def main():
 	for agent_idx in range(nagents):
 		agentx,agenty,grid = generateRandomNumber(grid,grid_size)
 		agentDirection = choice(possible_directions)
-		agentType = selectType()
+		agentType = choice(agent_types)
 		if cooperative_flag:
 			agentLevel = round(random.uniform(0.1,0.5), 3)
 			LEVELS.append(agentLevel)
