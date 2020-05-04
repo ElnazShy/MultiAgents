@@ -153,6 +153,19 @@ def print_result(main_sim,  time_steps, begin_time, end_time,mcts_mode, paramete
         agentData['l2TypeProbHistory'] = u_a.agents_parameter_estimation.l2_estimation.type_probabilities
         # print "l2 Type Prob History: ", agentData['l2TypeProbHistory']
 
+        l3EstimationHistory = u_a.agents_parameter_estimation.l3_estimation.get_estimation_history()
+        agentData['l3EstimationHistory'] = l3EstimationHistory
+        agentData['l3TypeProbHistory'] = u_a.agents_parameter_estimation.l3_estimation.type_probabilities
+        
+        l4EstimationHistory = u_a.agents_parameter_estimation.l4_estimation.get_estimation_history()
+        agentData['l4EstimationHistory'] = l4EstimationHistory
+        agentData['l4TypeProbHistory'] = u_a.agents_parameter_estimation.l4_estimation.type_probabilities
+        
+        l5EstimationHistory = u_a.agents_parameter_estimation.l5_estimation.get_estimation_history()
+        agentData['l5EstimationHistory'] = l5EstimationHistory
+        agentData['l5TypeProbHistory'] = u_a.agents_parameter_estimation.l5_estimation.type_probabilities
+
+
         f1EstimationHistory = u_a.agents_parameter_estimation.f1_estimation.get_estimation_history()
         agentData['f1EstimationHistory'] = f1EstimationHistory
         agentData['f1TypeProbHistory'] = u_a.agents_parameter_estimation.f1_estimation.type_probabilities

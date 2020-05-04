@@ -7,7 +7,7 @@ agentValueUpperLimit = 2 # set as default, use this variable to set the range in
 gridSize = [10,15,20,25]
 gridValueUpperLimit = 25 # default value set, use this variable to set range of grid
 directions = ['N','S','E','W']
-types = ['l1','l2','f1','f2']
+types = ['l1','l2','l3','l4','l5','f1','f2']
 
 def generateRandomNumber (grid,gridValue):
 	testXValue = randint(0,gridValue -1)

@@ -287,6 +287,15 @@ class ParameterEstimation:
         if agent_type.agent_type == 'l2':
             self.p_action_parameter_type_l2 = []
 
+        if agent_type.agent_type == 'l3':
+            self.p_action_parameter_type_l3 = []
+
+        if agent_type.agent_type == 'l4':
+            self.p_action_parameter_type_l4 = []
+
+        if agent_type.agent_type == 'l5':
+            self.p_action_parameter_type_l5 = []
+
         if agent_type.agent_type == 'f1':
             self.p_action_parameter_type_f1 = []
 

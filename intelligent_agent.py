@@ -62,6 +62,9 @@ class Agent:
                 if parameter_estimation_mode == 'MIN':
                     param_estim.l1_estimation.train_data.initialise_particle_data_set(u_a, sim)
                     param_estim.l2_estimation.train_data.initialise_particle_data_set(u_a, sim)
+                    param_estim.l3_estimation.train_data.initialise_particle_data_set(u_a, sim)
+                    param_estim.l4_estimation.train_data.initialise_particle_data_set(u_a, sim)
+                    param_estim.l5_estimation.train_data.initialise_particle_data_set(u_a, sim)
                     param_estim.f1_estimation.train_data.initialise_particle_data_set(u_a, sim)
                     param_estim.f2_estimation.train_data.initialise_particle_data_set(u_a, sim)
 
