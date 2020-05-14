@@ -2,12 +2,11 @@ import random
 from numpy.random import choice
 from sklearn import linear_model
 import numpy as np
-import scipy.stats as st
+
 import agent
 from random import sample
+from scipy import stats
 
-
-from copy import deepcopy
 from copy import copy
 import logging
 import sys
@@ -24,7 +23,7 @@ angle_min = 0.1
 level_max = 1
 level_min = 0
 
-types = ['l1', 'l2','l3','l4','l5']#, 'f1', 'f2', 'w']
+types = ['l1', 'l2', 'l3', 'l4']#, 'w']
 
 ########################################################################################################################
 class Parameter:
@@ -118,7 +117,6 @@ class ParameterEstimation:
         self.l2_estimation = TypeEstimation('l2',  generated_data_number, PF_add_threshold, train_mode, mutation_rate)
         self.l3_estimation = TypeEstimation('l3',  generated_data_number, PF_add_threshold, train_mode, mutation_rate)
         self.l4_estimation = TypeEstimation('l4',  generated_data_number, PF_add_threshold, train_mode, mutation_rate)
-        self.l5_estimation = TypeEstimation('l5',  generated_data_number, PF_add_threshold, train_mode, mutation_rate)
 
         self.action_history = []
         self.train_mode = train_mode
@@ -129,6 +127,7 @@ class ParameterEstimation:
         # Parameter estimation mode is AGA if it is Approximate Gradient Ascent ,
         #                              ABU if it is Approximate Bayesian Updating
         self.parameter_estimation_mode = None
+        self.oeata_parameter_calculation_mode = None
         self.polynomial_degree = None
 
         self.iteration = 0
@@ -138,30 +137,29 @@ class ParameterEstimation:
     ####################################################################################################################
     # Initialisation random values for parameters of each type and probability of actions in time step 0
 
-    def estimation_configuration(self, type_selection_mode, parameter_estimation_mode, polynomial_degree, type_estimation_mode):
+    def estimation_configuration(self, type_selection_mode, parameter_estimation_mode, polynomial_degree,
+                                 type_estimation_mode, oeata_parameter_calculation_mode = None):
 
         self.type_selection_mode = type_selection_mode
         self.parameter_estimation_mode = parameter_estimation_mode
         self.type_estimation_mode = type_estimation_mode
         self.polynomial_degree = polynomial_degree
-
+        self.oeata_parameter_calculation_mode = oeata_parameter_calculation_mode
     ####################################################################################################################
     # Initialisation random values for parameters of each type and probability of actions in time step 0
     def estimation_initialisation(self):
         if self.apply_adversary:
-            l1_init_prob = float(100)/float(6)
-            l2_init_prob = float(100)/float(6)
-            l3_init_prob = float(100)/float(6)
-            l4_init_prob = float(100)/float(6)
-            l5_init_prob = float(100)/float(6)
-            w_init_prob = float(100)/float(6)
-
-        else:
             l1_init_prob = 0.2
             l2_init_prob = 0.2
             l3_init_prob = 0.2
             l4_init_prob = 0.2
-            l5_init_prob = 0.2
+            w_init_prob = 0.2
+
+        else:
+            l1_init_prob = 0.25
+            l2_init_prob = 0.25
+            l3_init_prob = 0.25
+            l4_init_prob = 0.25
 
         self.l1_estimation.add_estimation_history(round(l1_init_prob, 2),
                                                   round(random.uniform(level_min, level_max), 2),  # 'level'
@@ -183,11 +181,6 @@ class ParameterEstimation:
                                                   round(random.uniform(radius_min, radius_max), 2),  # 'radius'
                                                   round(random.uniform(angle_min, angle_max), 2))  # 'angle'
 
-        self.l5_estimation.add_estimation_history(round(l5_init_prob, 2),
-                                                  round(random.uniform(level_min, level_max), 2),  # 'level'
-                                                  round(random.uniform(radius_min, radius_max), 2),  # 'radius'
-                                                  round(random.uniform(angle_min, angle_max), 2))  # 'angle'
-
         if self.apply_adversary:
             self.w_estimation.add_estimation_history(round(w_init_prob, 2),
                                               round(random.uniform(level_min, level_max), 2),  # 'level'
@@ -202,8 +195,6 @@ class ParameterEstimation:
         type_probes.append(self.l2_estimation.get_last_type_probability())
         type_probes.append(self.l3_estimation.get_last_type_probability())
         type_probes.append(self.l4_estimation.get_last_type_probability())
-        type_probes.append(self.l5_estimation.get_last_type_probability())
-
         if self.apply_adversary:
             type_probes.append(self.w_estimation.get_last_type_probability())
 
@@ -230,9 +221,6 @@ class ParameterEstimation:
             if type == 'l4':
                 tmp_prob = self.l4_estimation.get_last_type_probability()
 
-            if type == 'l5':
-                tmp_prob = self.l5_estimation.get_last_type_probability()
-
             if self.apply_adversary:
                 if type == 'w':
                     tmp_prob = self.w_estimation.get_last_type_probability()
@@ -257,9 +245,6 @@ class ParameterEstimation:
 
         if selected_type == 'l4':
             return self.l4_estimation.get_last_estimation()
-
-        if selected_type == 'l5':
-            return self.l5_estimation.get_last_estimation()
 
         if selected_type == 'w':
             return self.w_estimation.get_last_estimation()
@@ -293,66 +278,57 @@ class ParameterEstimation:
         if agent_type.agent_type == 'l4':
             self.p_action_parameter_type_l4 = []
 
-        if agent_type.agent_type == 'l5':
-            self.p_action_parameter_type_l5 = []
-
-        if agent_type.agent_type == 'f1':
-            self.p_action_parameter_type_f1 = []
-
-        if agent_type.agent_type == 'f2':
-            self.p_action_parameter_type_f2 = []
-
         if agent_type.agent_type == 'w':
             self.p_action_parameter_type_w = []
 
         return
 
-    ####################################################################################################################
-    def multivariate_bayesian(self, x_train, y_train, previous_estimate):
-        # TODO: This method must be called once, not four times in a loop as is currently the case
-        np.random.seed(123)
-
-        # Fit multivariate polynomial of degree 4PF_O_2
-        f_poly = linear_model.LinearRegression(fit_intercept=True)
-        f_poly.fit(x_train, y_train)
-
-        # Extract polynomial coefficients
-        f_coefficients = np.insert(f_poly.coef_, 0, f_poly.intercept_)
-        logging.info('f-hat Coefficients: {}'.format(f_coefficients))
-
-        # Generate prior
-        if self.iteration == 0:
-            beliefs = st.uniform.rvs(0, 1, size=4)
-            logging.info('Randomly Sampling Beliefs From Standard Uniform')
-        else:
-            beliefs = previous_estimate.observation_history[-1]
-
-        logging.info('Beliefs at Iteration {}: {}'.format(previous_estimate.iteration, beliefs))
-
-        # Catch array broadcasting errors
-        assert len(beliefs) == len(f_coefficients), 'F coefficient and beliefs of differing lengths'
-        if len(beliefs) != len(f_coefficients):
-            logging.warning('Iteration {}, beliefs and f-hat coefficients of differing lengths.'.format(self.iteration))
-            logging.warning('Beliefs Length: {}\nCoefficients Length: {}'.format(len(beliefs), len(f_coefficients)))
-
-        # Compute Improper Posterior Posterior
-        g_hat = f_coefficients * beliefs
-        logging.info('Polynomial Convolution g-hat values: {}'.format(g_hat))
-
-        # Collect samples from g
-        sampled_x = np.linspace(0, 1, 4)
-        sampled_y = st.uniform.rvs(0.1, 1, 4)  # TODO: How can I get g(p^l) here?
-
-        # Fit h-hat
-        h_polynomial = linear_model.LinearRegression(fit_intercept=True)
-        h_polynomial.fit(sampled_x, sampled_y)
-        h_coefficients = np.insert(h_polynomial.coef_, 0, h_polynomial.intercept_)
-
-        # Integrate h-hat
-        def integrand(level, radius, angle, x):
-            pass
-
-        logging.info('Estimation Complete\n{}'.format('-' * 100))
+    # ####################################################################################################################
+    # def multivariate_bayesian(self, x_train, y_train, previous_estimate):
+    #     # TODO: This method must be called once, not four times in a loop as is currently the case
+    #     np.random.seed(123)
+    #
+    #     # Fit multivariate polynomial of degree 4PF_O_2
+    #     f_poly = linear_model.LinearRegression(fit_intercept=True)
+    #     f_poly.fit(x_train, y_train)
+    #
+    #     # Extract polynomial coefficients
+    #     f_coefficients = np.insert(f_poly.coef_, 0, f_poly.intercept_)
+    #     logging.info('f-hat Coefficients: {}'.format(f_coefficients))
+    #
+    #     # Generate prior
+    #     if self.iteration == 0:
+    #         beliefs = st.uniform.rvs(0, 1, size=4)
+    #         logging.info('Randomly Sampling Beliefs From Standard Uniform')
+    #     else:
+    #         beliefs = previous_estimate.observation_history[-1]
+    #
+    #     logging.info('Beliefs at Iteration {}: {}'.format(previous_estimate.iteration, beliefs))
+    #
+    #     # Catch array broadcasting errors
+    #     assert len(beliefs) == len(f_coefficients), 'F coefficient and beliefs of differing lengths'
+    #     if len(beliefs) != len(f_coefficients):
+    #         logging.warning('Iteration {}, beliefs and f-hat coefficients of differing lengths.'.format(self.iteration))
+    #         logging.warning('Beliefs Length: {}\nCoefficients Length: {}'.format(len(beliefs), len(f_coefficients)))
+    #
+    #     # Compute Improper Posterior Posterior
+    #     g_hat = f_coefficients * beliefs
+    #     logging.info('Polynomial Convolution g-hat values: {}'.format(g_hat))
+    #
+    #     # Collect samples from g
+    #     sampled_x = np.linspace(0, 1, 4)
+    #     sampled_y = st.uniform.rvs(0.1, 1, 4)  # TODO: How can I get g(p^l) here?
+    #
+    #     # Fit h-hat
+    #     h_polynomial = linear_model.LinearRegression(fit_intercept=True)
+    #     h_polynomial.fit(sampled_x, sampled_y)
+    #     h_coefficients = np.insert(h_polynomial.coef_, 0, h_polynomial.intercept_)
+    #
+    #     # Integrate h-hat
+    #     def integrand(level, radius, angle, x):
+    #         pass
+    #
+    #     logging.info('Estimation Complete\n{}'.format('-' * 100))
 
     ####################################################################################################################
     def findMin(self,polynomial):
@@ -436,9 +412,9 @@ class ParameterEstimation:
     ####################################################################################################################
     def UCB_selection(self, time_step, final=False):
         if self.apply_adversary:
-            agent_types = ['l1', 'l2', 'l3', 'l4','l5', 'w']
+            agent_types = ['l1', 'l2', 'l3', 'l4', 'w']
         else:
-            agent_types = ['l1', 'l2', 'l3', 'l4','l5',]
+            agent_types = ['l1', 'l2', 'l3', 'l4']
 
         # Get the total number of probabilities
         prob_count = self.nested_list_sum(agent_types)
@@ -466,8 +442,6 @@ class ParameterEstimation:
             elif max_index == 3:
                 return_agent = ['l4']
             elif max_index == 4:
-                return_agent = ['l5']
-            elif max_index == 5:
                 return_agent = ['w']
 
             else:
@@ -475,14 +449,14 @@ class ParameterEstimation:
                 return_agent = ['l1']
         except:
             print('An error has occured in UCB, resorting to l1')
-            return_agent = ['f1']
+            return_agent = ['l3']
 
         #print('UCB Algorithm returned agent of type: {}'.format(return_agent[0]))
 
         if final:
             return return_agent
         else:
-            return ['f2']
+            return ['l4']
 
     ####################################################################################################################
     def set_choose_target_state(self, state, agent_type):
@@ -494,48 +468,32 @@ class ParameterEstimation:
             self.l3_estimation.choose_target_state = state
         elif agent_type == 'l4':
             self.l4_estimation.choose_target_state = state
-        elif agent_type == 'l5':
-            self.l5_estimation.choose_target_state = state
         elif agent_type == 'w':
             self.w_estimation.choose_target_state = state
 
     ####################################################################################################################
     def normalize_type_probability(self,unknown_agent):
         # 1. Defining the values
-        # print 'Normalizing:',self.l1_estimation.type_probability , self.l2_estimation.type_probability,self.f1_estimation.type_probability, self.f2_estimation.type_probability
+        # print 'Normalizing:',self.l1_estimation.type_probability , self.l2_estimation.type_probability,self.l3_estimation.type_probability, self.l4_estimation.type_probability
         alpha1 = 0
         alpha2 = 0
-        alpha3 = 0
-        alpha4 = 0
-        alpha5 = 0
         if unknown_agent.agent_type=='l1':
             alpha1 = 1.0
             alpha2 = 1.0
-            alpha3 = 1.0
-            alpha4 = 1.0
-            alpha5 = 1.0
         else:
             alpha1 = 1.0
             alpha2 = 1.0
-            alpha3 = 1.0
-            alpha4 = 1.0
-            alpha5 = 1.0
 
         l1_update_belief_value = alpha1 * self.l1_estimation.type_probability
         l2_update_belief_value = alpha2 * self.l2_estimation.type_probability
-        l3_update_belief_value = alpha3 * self.l3_estimation.type_probability
-        l4_update_belief_value = alpha4 * self.l4_estimation.type_probability
-        l5_update_belief_value = alpha5 * self.l5_estimation.type_probability
-
-        # f1_update_belief_value = self.f1_estimation.type_probability
-        # f2_update_belief_value = self.f2_estimation.type_probability
+        l3_update_belief_value = alpha1 * self.l3_estimation.type_probability
+        l4_update_belief_value = alpha1 * self.l4_estimation.type_probability
         if self.apply_adversary:
             w_update_belief_value = self.w_estimation.type_probability
 
         # 2. Summing
         sum_of_probabilities = l1_update_belief_value + l2_update_belief_value + \
-            l3_update_belief_value + l4_update_belief_value + l5_update_belief_value # + \
-                #f1_update_belief_value + f2_update_belief_value
+                               l3_update_belief_value + l4_update_belief_value
         if self.apply_adversary :
             sum_of_probabilities += w_update_belief_value
         belief_factor = 1
@@ -549,9 +507,6 @@ class ParameterEstimation:
             l2_prob = l2_update_belief_value * belief_factor
             l3_prob = l3_update_belief_value * belief_factor
             l4_prob = l4_update_belief_value * belief_factor
-            l5_prob = l5_update_belief_value * belief_factor
-            # f1_prob = f1_update_belief_value * belief_factor
-            # f2_prob = f2_update_belief_value * belief_factor
 
             if self.apply_adversary:
                 w_prob = w_update_belief_value * belief_factor
@@ -563,41 +518,39 @@ class ParameterEstimation:
                 l2_prob = 0.2
                 l3_prob = 0.2
                 l4_prob = 0.2
-                l5_prob = 0.2
-                # f1_prob = 0.2
-                # f2_prob = 0.2
                 w_prob = 0.2
 
             else:
-                l1_prob = 0.2
-                l2_prob = 0.2
-                l3_prob = 0.2
-                l4_prob = 0.2
-                l5_prob = 0.2
-                # f1_prob = 0.25
-                # f2_prob = 0.25
+                l1_prob = 0.25
+                l2_prob = 0.25
+                l3_prob = 0.25
+                l4_prob = 0.25
 
-        return l1_prob,l2_prob,l3_prob,l4_prob,l5_prob
+        return l1_prob,l2_prob,l3_prob,l4_prob
+        # if type =='l1':
+        #     return l1_prob
+        # elif type == 'l2':
+        #     return  l2_prob
+        # elif type =='l3':
+        #     return l3_prob
+        # elif type == 'l4':
+        #     return  l4_prob
 
     ####################################################################################################################
     def normalize_type_probabilities(self):
         # 1. Defining the values
-        # print 'Normalizing:',self.l1_estimation.type_probability , self.l2_estimation.type_probability,self.f1_estimation.type_probability, self.f2_estimation.type_probability
+        # print 'Normalizing:',self.l1_estimation.type_probability , self.l2_estimation.type_probability,self.l3_estimation.type_probability, self.l4_estimation.type_probability
 
         l1_update_belief_value = self.l1_estimation.type_probability
         l2_update_belief_value = self.l2_estimation.type_probability
         l3_update_belief_value = self.l3_estimation.type_probability
         l4_update_belief_value = self.l4_estimation.type_probability
-        l5_update_belief_value = self.l5_estimation.type_probability
-        # f1_update_belief_value = self.f1_estimation.type_probability
-        # f2_update_belief_value = self.f2_estimation.type_probability
         if self.apply_adversary:
             w_update_belief_value = self.w_estimation.type_probability
 
         # 2. Summing
         sum_of_probabilities = l1_update_belief_value + l2_update_belief_value + \
-            l3_update_belief_value + l4_update_belief_value + l5_update_belief_value #+ \
-                               # f1_update_belief_value + f2_update_belief_value
+                                l3_update_belief_value + l4_update_belief_value
         if self.apply_adversary :
             sum_of_probabilities += w_update_belief_value
         belief_factor = 1
@@ -611,26 +564,16 @@ class ParameterEstimation:
             l2_prob = l2_update_belief_value * belief_factor
             l3_prob = l3_update_belief_value * belief_factor
             l4_prob = l4_update_belief_value * belief_factor
-            l5_prob = l5_update_belief_value * belief_factor
-            # f1_prob = f1_update_belief_value * belief_factor
-            # f2_prob = f2_update_belief_value * belief_factor
 
             self.l1_estimation.type_probability = l1_prob
             self.l2_estimation.type_probability = l2_prob
             self.l3_estimation.type_probability = l3_prob
             self.l4_estimation.type_probability = l4_prob
-            self.l5_estimation.type_probability = l5_prob
-            # self.f1_estimation.type_probability = f1_prob
-            # self.f2_estimation.type_probability = f2_prob
 
             self.l1_estimation.type_probabilities.append(l1_prob)
             self.l2_estimation.type_probabilities.append(l2_prob)
             self.l3_estimation.type_probabilities.append(l3_prob)
             self.l4_estimation.type_probabilities.append(l4_prob)
-            self.l5_estimation.type_probabilities.append(l5_prob)
-
-            # self.f1_estimation.type_probabilities.append(f1_prob)
-            # self.f2_estimation.type_probabilities.append(f2_prob)
 
             if self.apply_adversary:
                 w_prob = w_update_belief_value * belief_factor
@@ -639,40 +582,28 @@ class ParameterEstimation:
         else:
             if self.apply_adversary:
 
-                self.l1_estimation.type_probability = float(100)/float(6)
-                self.l2_estimation.type_probability = float(100)/float(6)
-                self.l3_estimation.type_probability = float(100)/float(6)
-                self.l4_estimation.type_probability = float(100)/float(6)
-                self.l5_estimation.type_probability = float(100)/float(6)
-                # self.f1_estimation.type_probability = 0.2
-                # self.f2_estimation.type_probability = 0.2
-                self.w_estimation.type_probability = float(100)/float(6)
-
-                self.l1_estimation.type_probabilities.append(float(100)/float(6))
-                self.l2_estimation.type_probabilities.append(float(100)/float(6))
-                self.l3_estimation.type_probabilities.append(float(100)/float(6))
-                self.l4_estimation.type_probabilities.append(float(100)/float(6))
-                self.l5_estimation.type_probabilities.append(float(100)/float(6))
-                # self.f1_estimation.type_probabilities.append(0.2)
-                # self.f2_estimation.type_probabilities.append(0.2)
-                self.w_estimation.type_probabilities.append(float(100)/float(6))
-            else:
-
                 self.l1_estimation.type_probability = 0.2
                 self.l2_estimation.type_probability = 0.2
                 self.l3_estimation.type_probability = 0.2
                 self.l4_estimation.type_probability = 0.2
-                self.l5_estimation.type_probability = 0.2
-                # self.f1_estimation.type_probability = 0.2
-                # self.f2_estimation.type_probability = 0.2
+                self.w_estimation.type_probability = 0.2
 
                 self.l1_estimation.type_probabilities.append(0.2)
                 self.l2_estimation.type_probabilities.append(0.2)
                 self.l3_estimation.type_probabilities.append(0.2)
                 self.l4_estimation.type_probabilities.append(0.2)
-                self.l5_estimation.type_probabilities.append(0.2)
-                # self.f1_estimation.type_probabilities.append(0.2)
-                # self.f2_estimation.type_probabilities.append(0.2)
+                self.w_estimation.type_probabilities.append(0.2)
+            else:
+
+                self.l1_estimation.type_probability = 0.25
+                self.l2_estimation.type_probability = 0.25
+                self.l3_estimation.type_probability = 0.25
+                self.l4_estimation.type_probability = 0.25
+
+                self.l1_estimation.type_probabilities.append(0.25)
+                self.l2_estimation.type_probabilities.append(0.25)
+                self.l3_estimation.type_probabilities.append(0.25)
+                self.l4_estimation.type_probabilities.append(0.25)
 
     ####################################################################################################################
     def bayesian_updating(self, x_train, y_train, previous_estimate,  polynomial_degree=2, sampling='average'):
@@ -879,6 +810,68 @@ class ParameterEstimation:
             return None
 
     ####################################################################################################################
+    def mode_estimation(self, x_train, y_train):  # y_train is weight of parameters which are equal to
+        a_data_set = np.transpose(np.array(x_train))
+        # print y_train
+        if a_data_set != []:
+#            a_weights = np.mod(y_train)
+            levels = a_data_set[0, :]
+            ave_level = stats.mode(levels)[0][0]
+            angle = a_data_set[1, :]
+            # ave_angle = np.average(angle, weights=a_weights)
+            ave_angle = stats.mode(angle)[0][0]
+            radius = a_data_set[2, :]
+            # ave_radius = np.average(radius, weights=a_weights)
+            ave_radius = stats.mode(radius)[0][0]
+            new_parameter = Parameter(ave_level, ave_angle, ave_radius)
+            print stats.mode(levels)[0]
+            # if a_data_set != []:
+            #     levels = a_data_set[0, :]
+            #     ave_level = np.average(levels)
+            #
+            #     angle = a_data_set[1, :]
+            #     ave_angle = np.average(angle)
+            #
+            #     radius = a_data_set[2, :]
+            #     ave_radius = np.average(radius)
+            #
+            #     new_parameter = Parameter(ave_level, ave_angle, ave_radius)
+            return new_parameter
+        else:
+            return None
+
+    ####################################################################################################################
+    def median_estimation(self, x_train, y_train):  # y_train is weight of parameters which are equal to
+        a_data_set = np.transpose(np.array(x_train))
+        # print y_train
+        if a_data_set != []:
+            # a_weights = np.mod(y_train)
+            levels = a_data_set[0, :]
+            ave_level = np.median(levels)
+            angle = a_data_set[1, :]
+            # ave_angle = np.average(angle, weights=a_weights)
+            ave_angle = np.median(angle)
+            radius = a_data_set[2, :]
+            # ave_radius = np.average(radius, weights=a_weights)
+            ave_radius = np.median(radius)
+            new_parameter = Parameter(ave_level, ave_angle, ave_radius)
+
+            # if a_data_set != []:
+            #     levels = a_data_set[0, :]
+            #     ave_level = np.average(levels)
+            #
+            #     angle = a_data_set[1, :]
+            #     ave_angle = np.average(angle)
+            #
+            #     radius = a_data_set[2, :]
+            #     ave_radius = np.average(radius)
+            #
+            #     new_parameter = Parameter(ave_level, ave_angle, ave_radius)
+            return new_parameter
+        else:
+            return None
+
+    ####################################################################################################################
     def copy_last_estimation(self, agent_type):
         if agent_type == 'l1':
             return copy(self.l1_estimation.get_last_estimation())
@@ -888,8 +881,6 @@ class ParameterEstimation:
             return copy(self.l3_estimation.get_last_estimation())
         elif agent_type == 'l4':
             return copy(self.l4_estimation.get_last_estimation())
-        elif agent_type == 'l5':
-            return copy(self.l5_estimation.get_last_estimation())
         elif agent_type == 'w':
             return copy(self.w_estimation.get_last_estimation())
         else:
@@ -903,8 +894,13 @@ class ParameterEstimation:
         # 2. Running the estimation method if the train data
         # sets are not empty
         if x_train != [] and y_train != []:
-            if self.parameter_estimation_mode == 'MIN':
-                estimated_parameter = self.mean_estimation(x_train,y_train)
+            if self.parameter_estimation_mode == 'MIN' :
+                if self.oeata_parameter_calculation_mode =='MEAN':
+                    estimated_parameter = self.mean_estimation(x_train,y_train)
+                if self.oeata_parameter_calculation_mode == 'MODE':
+                    estimated_parameter = self.mode_estimation(x_train, y_train)
+                if self.oeata_parameter_calculation_mode =='MEDIAN':
+                    estimated_parameter = self.median_estimation(x_train,y_train)
             elif self.parameter_estimation_mode == 'AGA':
                 estimated_parameter = self.calculate_gradient_ascent(x_train, y_train, last_parameters_value)
             elif self.parameter_estimation_mode == 'ABU':
@@ -926,15 +922,12 @@ class ParameterEstimation:
         # TYPE L2 ------------------ 
         elif selected_type == 'l2':
             return self.l2_estimation.get_last_type_probability()
-        # TYPE L3 ------------------ 
+        # TYPE l3 ------------------ 
         elif selected_type == 'l3':
             return self.l3_estimation.get_last_type_probability()
-        # TYPE L4 ------------------ 
+        # TYPE l4 ------------------ 
         elif selected_type == 'l4':
             return self.l4_estimation.get_last_type_probability()
-        # TYPE L5 ------------------ 
-        elif selected_type == 'l5':
-            return self.l5_estimation.get_last_type_probability()
         # TYPE W ------------------ 
         elif selected_type == 'w':
             return self.w_estimation.get_last_type_probability()
@@ -980,8 +973,6 @@ class ParameterEstimation:
             return copy(self.l3_estimation.train_data)
         elif selected_type == 'l4':
             return copy(self.l4_estimation.train_data)
-        elif selected_type == 'l5':
-            return copy(self.l5_estimation.train_data)
         elif selected_type == 'w':
             return copy(self.w_estimation.train_data)
         else:
@@ -997,8 +988,6 @@ class ParameterEstimation:
             return copy(self.l3_estimation.train_data)
         elif selected_type == 'l4':
             return copy(self.l4_estimation.train_data)
-        elif selected_type == 'l5':
-            return copy(self.l5_estimation.train_data)
         elif selected_type == 'w':
             return copy(self.w_estimation.train_data)
         else:
@@ -1048,15 +1037,6 @@ class ParameterEstimation:
         if selected_type == 'l4':
             self.l4_estimation.train_data = copy(train_data)
 
-        if selected_type == 'l5':
-            self.l5_estimation.train_data = copy(train_data)
-
-        if selected_type == 'f1':
-            self.f1_estimation.train_data = copy(train_data)
-
-        if selected_type == 'f2':
-            self.f2_estimation.train_data = copy(train_data)
-
         if selected_type == 'w':
             self.w_estimation.train_data = copy(train_data)
             
@@ -1092,26 +1072,14 @@ class ParameterEstimation:
             elif estimated_type == 'l2':
                 self.l2_estimation.type_probability = 1
                 self.l2_estimation.estimation_history.append(estimated_parameter)
-                # TYPE L3 ------------------
+                # TYPE l3 ------------------
             elif estimated_type == 'l3':
                 self.l3_estimation.type_probability = 1
                 self.l3_estimation.estimation_history.append(estimated_parameter)
-                # TYPE L4 ------------------
+                # TYPE l4 ------------------
             elif estimated_type == 'l4':
                 self.l4_estimation.type_probability = 1
                 self.l4_estimation.estimation_history.append(estimated_parameter)
-                # TYPE L5 ------------------
-            elif estimated_type == 'l5':
-                self.l5_estimation.type_probability = 1
-                self.l5_estimation.estimation_history.append(estimated_parameter)
-                # TYPE F1 ------------------
-            elif estimated_type == 'f1':
-                self.f1_estimation.type_probability = 1
-                self.f1_estimation.estimation_history.append(estimated_parameter)
-                # TYPE F2 ------------------
-            elif estimated_type == 'f2':
-                self.f2_estimation.type_probability = 1
-                self.f2_estimation.estimation_history.append(estimated_parameter)
         else :
             # print '>>>>>',po
             # 2. Estimating the agent type
@@ -1175,65 +1143,32 @@ class ParameterEstimation:
                                 self.l2_estimation.type_probability = action_prob * self.l2_estimation.get_last_type_probability()
 
                             self.l2_estimation.update_estimation(new_parameters_estimation, action_prob)
-                        # TYPE L3 ------------------
+                        # TYPE l3 ------------------
                         elif selected_type == 'l3':
                             if self.train_mode == 'history_based':
-                                if self.type_estimation_mode == 'BTE':
+                                if unknown_agent.next_action != 'L':
                                     self.l3_estimation.type_probability = action_prob * self.l3_estimation.get_last_type_probability()
-                                if self.type_estimation_mode == 'PTE' or self.type_estimation_mode == 'BPTE':
-                                    self.l3_estimation.type_probability = pf_type_probability
+                                else:
+                                    if self.type_estimation_mode == 'BTE':
+                                        self.l3_estimation.type_probability = action_prob * self.l3_estimation.get_last_type_probability()
+                                    if self.type_estimation_mode == 'PTE' or self.type_estimation_mode == 'BPTE':
+                                        self.l3_estimation.type_probability = pf_type_probability
                             else:
                                 self.l3_estimation.type_probability = action_prob * self.l3_estimation.get_last_type_probability()
-
                             self.l3_estimation.update_estimation(new_parameters_estimation, action_prob)
-                        # TYPE L4 ------------------
+                        # TYPE l4 ------------------
                         elif selected_type == 'l4':
                             if self.train_mode == 'history_based':
-                                if self.type_estimation_mode == 'BTE':
+                                if unknown_agent.next_action != 'L':
                                     self.l4_estimation.type_probability = action_prob * self.l4_estimation.get_last_type_probability()
-                                if self.type_estimation_mode == 'PTE' or self.type_estimation_mode == 'BPTE':
-                                    self.l4_estimation.type_probability = pf_type_probability
+                                else:
+                                    if self.type_estimation_mode == 'BTE':
+                                        self.l4_estimation.type_probability = action_prob * self.l4_estimation.get_last_type_probability()
+                                    if self.type_estimation_mode == 'PTE' or self.type_estimation_mode == 'BPTE':
+                                        self.l4_estimation.type_probability = pf_type_probability
                             else:
                                 self.l4_estimation.type_probability = action_prob * self.l4_estimation.get_last_type_probability()
-
                             self.l4_estimation.update_estimation(new_parameters_estimation, action_prob)
-                        # TYPE L5 ------------------
-                        elif selected_type == 'l5':
-                            if self.train_mode == 'history_based':
-                                if self.type_estimation_mode == 'BTE':
-                                    self.l5_estimation.type_probability = action_prob * self.l5_estimation.get_last_type_probability()
-                                if self.type_estimation_mode == 'PTE' or self.type_estimation_mode == 'BPTE':
-                                    self.l5_estimation.type_probability = pf_type_probability
-                            else:
-                                self.l5_estimation.type_probability = action_prob * self.l5_estimation.get_last_type_probability()
-
-                            self.l5_estimation.update_estimation(new_parameters_estimation, action_prob)
-                        # TYPE F1 ------------------
-                        elif selected_type == 'f1':
-                            if self.train_mode == 'history_based':
-                                if unknown_agent.next_action != 'L':
-                                    self.f1_estimation.type_probability = action_prob * self.f1_estimation.get_last_type_probability()
-                                else:
-                                    if self.type_estimation_mode == 'BTE':
-                                        self.f1_estimation.type_probability = action_prob * self.f1_estimation.get_last_type_probability()
-                                    if self.type_estimation_mode == 'PTE' or self.type_estimation_mode == 'BPTE':
-                                        self.f1_estimation.type_probability = pf_type_probability
-                            else:
-                                self.f1_estimation.type_probability = action_prob * self.f1_estimation.get_last_type_probability()
-                            self.f1_estimation.update_estimation(new_parameters_estimation, action_prob)
-                        # TYPE F2 ------------------
-                        elif selected_type == 'f2':
-                            if self.train_mode == 'history_based':
-                                if unknown_agent.next_action != 'L':
-                                    self.f2_estimation.type_probability = action_prob * self.f2_estimation.get_last_type_probability()
-                                else:
-                                    if self.type_estimation_mode == 'BTE':
-                                        self.f2_estimation.type_probability = action_prob * self.f2_estimation.get_last_type_probability()
-                                    if self.type_estimation_mode == 'PTE' or self.type_estimation_mode == 'BPTE':
-                                        self.f2_estimation.type_probability = pf_type_probability
-                            else:
-                                self.f2_estimation.type_probability = action_prob * self.f2_estimation.get_last_type_probability()
-                            self.f2_estimation.update_estimation(new_parameters_estimation, action_prob)
                     # ADVERSARY ------------------
                     else:
                         if self.train_mode == 'history_based':
@@ -1260,46 +1195,30 @@ class ParameterEstimation:
             # e. Normalising the type probabilities
             if self.train_mode == 'history_based':
                 if self.type_estimation_mode == 'BPTE':
-                    self.l1_estimation.type_probability, self.l2_estimation.type_probability, \
-                    self.l3_estimation.type_probability, self.l4_estimation.type_probability, \
-                    self.l5_estimation.type_probability = \
-                        self.normalize_type_probability(unknown_agent)
+                    self.l1_estimation.type_probability, self.l2_estimation.type_probability ,\
+                    self.l3_estimation.type_probability, self.l4_estimation.type_probability=  self.normalize_type_probability(unknown_agent)
                     self.l1_estimation.type_probability = self.l1_estimation.type_probability * \
                                                           self.l1_estimation.get_last_type_probability()
                     self.l2_estimation.type_probability = self.l2_estimation.type_probability * \
                                                           self.l2_estimation.get_last_type_probability()
                     self.l3_estimation.type_probability = self.l3_estimation.type_probability * \
-                                                          self.l3_estimation.get_last_type_probability()
+                                                           self.l3_estimation.get_last_type_probability()
                     self.l4_estimation.type_probability = self.l4_estimation.type_probability * \
-                                                          self.l4_estimation.get_last_type_probability()
-                    self.l5_estimation.type_probability = self.l5_estimation.type_probability * \
-                                                          self.l5_estimation.get_last_type_probability()
-                    # self.f1_estimation.type_probability = self.f1_estimation.type_probability * \
-                    #                                       self.f1_estimation.get_last_type_probability()
-                    # self.f2_estimation.type_probability = self.f2_estimation.type_probability * \
-                    #                                       self.f2_estimation.get_last_type_probability()
+                                                           self.l4_estimation.get_last_type_probability()
                 if self.type_estimation_mode == 'PTE':
                     self.l1_estimation.type_probability, self.l2_estimation.type_probability = \
                         self.normalize_type_probability(unknown_agent)
 
                 if self.type_estimation_mode == 'LPTE':
-                    self.l1_estimation.type_probability, self.l2_estimation.type_probability, \
-                    self.l3_estimation.type_probability, self.l4_estimation.type_probability, \
-                    self.l5_estimation.type_probability = \
+                    self.l1_estimation.type_probability, self.l2_estimation.type_probability = \
                         self.normalize_type_probability(unknown_agent)
 
                     self.l1_estimation.type_probability = self.alpha * self.l1_estimation.type_probability + \
                                                           (1-self.alpha) * self.l1_estimation.get_last_type_probability()
                     self.l2_estimation.type_probability = self.alpha *  self.l2_estimation.type_probability + \
                                                           (1-self.alpha) * self.l2_estimation.get_last_type_probability()
-                    self.l3_estimation.type_probability = self.alpha *  self.l3_estimation.type_probability + \
-                                                          (1-self.alpha) * self.l3_estimation.get_last_type_probability()
-                    self.l4_estimation.type_probability = self.alpha *  self.l4_estimation.type_probability + \
-                                                          (1-self.alpha) * self.l4_estimation.get_last_type_probability()
-                    self.l5_estimation.type_probability = self.alpha *  self.l5_estimation.type_probability + \
-                                                          (1-self.alpha) * self.l5_estimation.get_last_type_probability()
 
         self.normalize_type_probabilities()
         # print '>>> %d) %.4lf %.4lf ' %(unknown_agent.index,self.l1_estimation.type_probability,self.l2_estimation.type_probability)
-        #                                        # ,self.f1_estimation.type_probability,self.f2_estimation.type_probability)
+        #                                        # ,self.l3_estimation.type_probability,self.l4_estimation.type_probability)
 

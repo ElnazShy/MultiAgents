@@ -1,6 +1,6 @@
 import random
 import agent
-from copy import copy, deepcopy
+from copy import copy
 
 radius_max = 1
 radius_min = 0.1

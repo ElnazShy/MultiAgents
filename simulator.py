@@ -76,7 +76,7 @@ class Simulator:
                         self.items.append(item.item(val[0], val[1], val[2], i))
                         i += 1
                     elif 'agent' in key:
-                        print(val)
+
                         #import ipdb; ipdb.set_trace()
 
                         # x, y, direction, index, agent_type
@@ -196,16 +196,17 @@ class Simulator:
             copy_items.append(copy_item)
 
         copy_agents = list()
-        copy_agent = None
+
         if not for_UCT:
             for cagent in self.agents:
                 copy_agent = cagent.copy()
+                copy_agents.append(copy_agent)
+
 
         else:
             for u_a in self.main_agent.visible_agents:
                 copy_agent = u_a.copy()
-
-        copy_agents.append(copy_agent)
+                copy_agents.append(copy_agent)
 
         copy_obstacles = []
         for obs in self.obstacles:

@@ -24,11 +24,15 @@ class Information:
 		self.AGA_max_len_hist = 0
 		self.ABU_max_len_hist = 0
 		self.OGE_max_len_hist = 0
+		self.OGE_mo_max_len_hist = 0
+		self.OGE_me_max_len_hist = 0
 		self.pomcp_max_len_hist = 0
 
 		self.AGA_errors = list()
 		self.ABU_errors = list()
 		self.OGE_errors = list()
+		self.OGE_me_errors = list()
+		self.OGE_mo_errors = list()
 		self.pomcp_errors = list()
 
 
@@ -36,15 +40,22 @@ class Information:
 		self.ABU_mean_len_hist = 0
 		self.pomcp_mean_len_hist = 0
 		self.OGE_mean_len_hist = 0
+		self.OGE_me_mean_len_hist = 0
+		self.OGE_mo_mean_len_hist = 0
 
 		self.AGA_std_len_hist = 0
 		self.ABU_std_len_hist = 0
 		self.OGE_std_len_hist = 0
+		self.OGE_mo_std_len_hist = 0
+		self.OGE_me_std_len_hist = 0
 		self.pomcp_std_len_hist = 0
+
 
 		self.AGA_ci_len_hist = 0
 		self.ABU_ci_len_hist = 0
 		self.OGE_ci_len_hist = 0
+		self.OGE_mo_ci_len_hist = 0
+		self.OGE_ne_ci_len_hist = 0
 		self.pomcp_ci_len_hist = 0
 
 
@@ -52,6 +63,8 @@ class Information:
 		self.AGA_timeSteps = list()
 		self.ABU_timeSteps = list()
 		self.OGE_timeSteps = list()
+		self.OGE_mo_timeSteps = list()
+		self.OGE_me_timeSteps = list()
 		self.pomcp_timeSteps = list()
 
 
@@ -59,22 +72,30 @@ class Information:
 		self.AGA_computationalTime = list()
 		self.ABU_computationalTime = list()
 		self.OGE_computationalTime = list()
+		self.OGE_mo_computationalTime = list()
+		self.OGE_me_computationalTime = list()
 		self.pomcp_computationalTime = list()
 
 
 		self.AGA_estimationHist = list()
 		self.ABU_estimationHist = list()
 		self.OGE_estimationHist = list()
+		self.OGE_me_estimationHist = list()
+		self.OGE_mo_estimationHist = list()
 		self.pomcp_estimationHist = list()
 
 		self.AGA_typeProbHistory= list()
 		self.ABU_typeProbHistory= list()
 		self.OGE_typeProbHistory= list()
+		self.OGE_mo_typeProbHistory = list()
+		self.OGE_me_typeProbHistory = list()
 		self.pomcp_typeProbHistory = list()
 
 		self.AGA_trueParameter = list()
 		self.ABU_trueParameter = list()
 		self.OGE_trueParameter = list()
+		self.OGE_mo_trueParameter = list()
+		self.OGE_me_trueParameter = list()
 		self.pomcp_trueParameter = list()
 
 		self.aga_levels, self.aga_levels_std_dev, self.aga_levels_ci = list(), list(), list()
@@ -92,6 +113,14 @@ class Information:
 		self.OGE_levels, self.OGE_levels_std_dev, self.OGE_levels_ci = list(), list(), list()
 		self.OGE_radius, self.OGE_radius_std_dev, self.OGE_radius_ci = list(), list(), list()
 		self.OGE_angles, self.OGE_angles_std_dev, self.OGE_angles_ci = list(), list(), list()
+
+		self.OGE_mo_levels, self.OGE_mo_levels_std_dev, self.OGE_mo_levels_ci = list(), list(), list()
+		self.OGE_mo_radius, self.OGE_mo_radius_std_dev, self.OGE_mo_radius_ci = list(), list(), list()
+		self.OGE_mo_angles, self.OGE_mo_angles_std_dev, self.OGE_mo_angles_ci = list(), list(), list()
+
+		self.OGE_me_levels, self.OGE_me_levels_std_dev, self.OGE_me_levels_ci = list(), list(), list()
+		self.OGE_me_radius, self.OGE_me_radius_std_dev, self.OGE_me_radius_ci = list(), list(), list()
+		self.OGE_me_angles, self.OGE_me_angles_std_dev, self.OGE_me_angles_ci = list(), list(), list()
 
 		self.pomcp_levels, self.pomcp_levels_std_dev, self.pomcp_levels_ci = list(), list(), list()
 		self.pomcp_radius, self.pomcp_radius_std_dev, self.pomcp_radius_ci = list(), list(), list()
@@ -132,9 +161,27 @@ class Information:
 		self.OGE_errors = self.normalise_arrays(max_len,self.OGE_errors)
 		self.OGE_typeProbHistory  = self.normalise_arrays(max_len,self.OGE_typeProbHistory)
 
+		self.OGE_me_errors = self.normalise_arrays(max_len, self.OGE_me_errors)
+		self.OGE_me_typeProbHistory = self.normalise_arrays(max_len, self.OGE_me_typeProbHistory)
+
+		self.OGE_mo_errors = self.normalise_arrays(max_len, self.OGE_mo_errors)
+		self.OGE_mo_typeProbHistory = self.normalise_arrays(max_len, self.OGE_mo_typeProbHistory)
+
 		self.pomcp_errors = self.normalise_arrays(max_len, self.pomcp_errors)
 		self.pomcp_typeProbHistory = self.normalise_arrays(max_len, self.pomcp_typeProbHistory)
 
+	def normaliseM(self):
+		max_len = max(self.OGE_me_max_len_hist, self.ABU_max_len_hist, self.OGE_max_len_hist, self.OGE_me_max_len_hist)
+
+
+		self.OGE_errors = self.normalise_arrays(max_len, self.OGE_errors)
+		self.OGE_typeProbHistory = self.normalise_arrays(max_len, self.OGE_typeProbHistory)
+
+		self.OGE_me_errors = self.normalise_arrays(max_len, self.OGE_me_errors)
+		self.OGE_me_typeProbHistory = self.normalise_arrays(max_len, self.OGE_me_typeProbHistory)
+
+		self.OGE_mo_errors = self.normalise_arrays(max_len, self.OGE_mo_errors)
+		self.OGE_mo_typeProbHistory = self.normalise_arrays(max_len, self.OGE_mo_typeProbHistory)
 
 
 	def normalise_arrays(self, max_value , errors_list):
@@ -175,9 +222,6 @@ class Information:
 		self.abu_angles, self.abu_angles_std_dev, self.abu_angles_ci = self.extract_parameter_errors(self.ABU_errors,ANGLE)
 		# print 'ABU - angles OK'
 
-
-
-
 		self.abu_level_error_mean = np.mean(np.array(self.abu_levels))
 		self.abu_angle_error_mean = np.mean(np.array(self.abu_angles))
 		self.abu_radius_error_mean = np.mean(np.array(self.abu_radius))
@@ -207,7 +251,49 @@ class Information:
 		self.oge_radius_error_ci = np.std(np.array(self.OGE_radius))
 		self.oge_type_probability_ci = np.std(np.array(self.OGE_typeProbHistory))
 
-		if len(self.pomcp_errors)>0:
+		if len(self.OGE_me_errors) > 0:
+			# print '*** OGE - extracting level, radius and angle info ***'
+			self.OGE_me_levels, self.OGE_me_levels_std_dev, self.OGE_me_levels_ci = self.extract_parameter_errors(
+				self.OGE_me_errors, LEVEL)
+			# print 'OGE - levels OK'
+			self.OGE_me_radius, self.OGE_me_radius_std_dev, self.OGE_me_radius_ci = self.extract_parameter_errors(
+				self.OGE_me_errors, RADIUS)
+			# print 'OGE - radius OK'
+			self.OGE_me_angles, self.OGE_me_angles_std_dev, self.OGE_me_angles_ci = self.extract_parameter_errors(
+				self.OGE_me_errors, ANGLE)
+			# print 'OGE - angles OK'
+
+			self.oge_me_level_error_mean = np.mean(np.array(self.OGE_me_levels))
+			self.oge_me_angle_error_mean = np.mean(np.array(self.OGE_me_angles))
+			self.oge_me_radius_error_mean = np.mean(np.array(self.OGE_me_radius))
+			self.oge_me_type_probability_mean = np.mean(np.array(self.OGE_me_typeProbHistory))
+			self.oge_me_level_error_ci = np.std(np.array(self.OGE_me_levels))
+			self.oge_me_angle_error_ci = np.std(np.array(self.OGE_me_angles))
+			self.oge_me_radius_error_ci = np.std(np.array(self.OGE_me_radius))
+			self.oge_me_type_probability_ci = np.std(np.array(self.OGE_me_typeProbHistory))
+
+		if len(self.OGE_mo_errors) > 0:
+			# print '*** OGE - extracting level, radius and angle info ***'
+			self.OGE_mo_levels, self.OGE_mo_levels_std_dev, self.OGE_mo_levels_ci = self.extract_parameter_errors(
+				self.OGE_mo_errors, LEVEL)
+			# print 'OGE - levels OK'
+			self.OGE_mo_radius, self.OGE_mo_radius_std_dev, self.OGE_mo_radius_ci = self.extract_parameter_errors(
+				self.OGE_mo_errors, RADIUS)
+			# print 'OGE - radius OK'
+			self.OGE_mo_angles, self.OGE_mo_angles_std_dev, self.OGE_mo_angles_ci = self.extract_parameter_errors(
+				self.OGE_mo_errors, ANGLE)
+			# print 'OGE - angles OK'
+
+			self.oge_mo_level_error_mean = np.mean(np.array(self.OGE_mo_levels))
+			self.oge_mo_angle_error_mean = np.mean(np.array(self.OGE_mo_angles))
+			self.oge_mo_radius_error_mean = np.mean(np.array(self.OGE_mo_radius))
+			self.oge_mo_type_probability_mean = np.mean(np.array(self.OGE_mo_typeProbHistory))
+			self.oge_mo_level_error_ci = np.std(np.array(self.OGE_mo_levels))
+			self.oge_mo_angle_error_ci = np.std(np.array(self.OGE_mo_angles))
+			self.oge_mo_radius_error_ci = np.std(np.array(self.OGE_mo_radius))
+			self.oge_mo_type_probability_ci = np.std(np.array(self.OGE_mo_typeProbHistory))
+
+		if len(self.pomcp_errors) > 0 :
 			# print '*** pomcp - extracting level, radius and angle info ***'
 			self.pomcp_levels, self.pomcp_levels_std_dev, self.pomcp_levels_ci = self.extract_parameter_errors(self.pomcp_errors,
 																										 LEVEL)
@@ -230,7 +316,74 @@ class Information:
 			self.pomcp_radius_error_ci = np.std(np.array(self.pomcp_radius))
 			self.pomcp_type_probability_ci = np.std(np.array(self.pomcp_typeProbHistory))
 
-		
+	def extractM(self):
+			global LEVEL, RADIUS, ANGLE
+			print 'extract mean'
+			# print '*** OGE - extracting level, radius and angle info ***'
+			self.OGE_levels, self.OGE_levels_std_dev, self.OGE_levels_ci = self.extract_parameter_errors(
+				self.OGE_errors, LEVEL)
+			# print 'OGE - levels OK'
+			self.OGE_radius, self.OGE_radius_std_dev, self.OGE_radius_ci = self.extract_parameter_errors(
+				self.OGE_errors, RADIUS)
+			# print 'OGE - radius OK'
+			self.OGE_angles, self.OGE_angles_std_dev, self.OGE_angles_ci = self.extract_parameter_errors(
+				self.OGE_errors, ANGLE)
+			# print 'OGE - angles OK'
+
+			self.oge_level_error_mean = np.mean(np.array(self.OGE_levels))
+			self.oge_angle_error_mean = np.mean(np.array(self.OGE_angles))
+			self.oge_radius_error_mean = np.mean(np.array(self.OGE_radius))
+			self.oge_type_probability_mean = np.mean(np.array(self.OGE_typeProbHistory))
+			self.oge_level_error_ci = np.std(np.array(self.OGE_levels))
+			self.oge_angle_error_ci = np.std(np.array(self.OGE_angles))
+			self.oge_radius_error_ci = np.std(np.array(self.OGE_radius))
+			self.oge_type_probability_ci = np.std(np.array(self.OGE_typeProbHistory))
+
+			print 'median'
+			if len(self.OGE_me_errors) > 0:
+				# print '*** OGE - extracting level, radius and angle info ***'
+				self.OGE_me_levels, self.OGE_me_levels_std_dev, self.OGE_me_levels_ci = self.extract_parameter_errors_mo(
+					self.OGE_me_errors, LEVEL)
+				# print 'OGE - levels OK'
+				self.OGE_me_radius, self.OGE_me_radius_std_dev, self.OGE_me_radius_ci = self.extract_parameter_errors_mo(
+					self.OGE_me_errors, RADIUS)
+				# print 'OGE - radius OK'
+				self.OGE_me_angles, self.OGE_me_angles_std_dev, self.OGE_me_angles_ci = self.extract_parameter_errors_mo(
+					self.OGE_me_errors, ANGLE)
+				# print 'OGE - angles OK'
+
+				self.oge_me_level_error_mean = np.mean(np.array(self.OGE_me_levels))
+				self.oge_me_angle_error_mean = np.mean(np.array(self.OGE_me_angles))
+				self.oge_me_radius_error_mean = np.mean(np.array(self.OGE_me_radius))
+				# self.oge_me_type_probability_mean = np.mean(np.array(self.OGE_me_typeProbHistory))
+				self.oge_me_level_error_ci = np.std(np.array(self.OGE_me_levels))
+				self.oge_me_angle_error_ci = np.std(np.array(self.OGE_me_angles))
+				self.oge_me_radius_error_ci = np.std(np.array(self.OGE_me_radius))
+				# self.oge_me_type_probability_ci = np.std(np.array(self.OGE_me_typeProbHistory))
+
+			print 'mode'
+
+			if len(self.OGE_mo_errors) > 0:
+			#	print np.array(self.OGE_mo_errors)
+				# print '*** OGE - extracting level, radius and angle info ***'
+				self.OGE_mo_levels, self.OGE_mo_levels_std_dev, self.OGE_mo_levels_ci = self.extract_parameter_errors_mo(
+					self.OGE_mo_errors, LEVEL)
+				# print 'OGE - levels OK'
+				self.OGE_mo_radius, self.OGE_mo_radius_std_dev, self.OGE_mo_radius_ci = self.extract_parameter_errors_mo(
+					self.OGE_mo_errors, RADIUS)
+				# print 'OGE - radius OK'
+				self.OGE_mo_angles, self.OGE_mo_angles_std_dev, self.OGE_mo_angles_ci = self.extract_parameter_errors_mo(
+					self.OGE_mo_errors, ANGLE)
+				# print 'OGE - angles OK'
+
+				self.oge_mo_level_error_mean = np.mean(np.array(self.OGE_mo_levels))
+				self.oge_mo_angle_error_mean = np.mean(np.array(self.OGE_mo_angles))
+				self.oge_mo_radius_error_mean = np.mean(np.array(self.OGE_mo_radius))
+				# self.oge_mo_type_probability_mean = np.mean(np.array(self.OGE_mo_typeProbHistory))
+				self.oge_mo_level_error_ci = np.std(np.array(self.OGE_mo_levels))
+				self.oge_mo_angle_error_ci = np.std(np.array(self.OGE_mo_angles))
+				self.oge_mo_radius_error_ci = np.std(np.array(self.OGE_mo_radius))
+				# self.oge_mo_type_probability_ci = np.std(np.array(self.OGE_mo_typeProbHistory))
 
 	def extract_parameter_errors(self,main_error,parameter):
 		error_histories = deepcopy(main_error)
@@ -238,15 +391,17 @@ class Information:
 		# 1. Errors
 		# a. extracting the parameter history
 		parameter_history = []
+
 		for error_history in error_histories:
 			error = []
 			for e in error_history:
-				error.append(e[parameter])
+				error.append((e[parameter]))
 			parameter_history.append(error)
 
 		# b. normalizing
-		errors=np.array(parameter_history)
-		errors=errors.mean(axis=0).tolist()
+
+		errors = np.asarray(parameter_history)
+		errors = errors.mean(axis=0).tolist()
 
 		# # 2. Standard Deviation
 		# # b. extracting the std dev
@@ -281,6 +436,68 @@ class Information:
 				conf_int[i] = 0
 
 		return errors, std_dev, conf_int
+
+	def extract_parameter_errors_mo(self, main_error, parameter):
+		print len(main_error)
+		error_histories = deepcopy(main_error)
+		len_error = len(main_error[0])
+		# 1. Errors
+		# a. extracting the parameter history
+		parameter_history = []
+		for error_history in error_histories:
+			error = []
+			for e in error_history:
+				error.append((e[parameter]))
+
+			# len_error= len(error)
+			parameter_history.append(error)
+
+		# b. normalizing
+		errors = []
+
+		for j in range(len_error):
+			sum = 0
+			for p in range(len(main_error)):
+				sum += parameter_history[p][j]
+			errors.append (sum/len(main_error))
+
+		# errors = np.array(parameter_history)
+		#
+		# errors = errors.mean(axis=0).tolist()
+
+		# # 2. Standard Deviation
+		# # b. extracting the std dev
+		# std_dev_hist = []
+		# for error_history in error_histories:
+		# 	error = []
+		# 	for i in range(len(error_history)):
+		# 		error.append((errors[i] - error_history[i][parameter]) ** 2)
+		# 	std_dev_hist.append(error)
+		# #
+		# std_dev = np.array(std_dev_hist)
+		# std_dev = std_dev.mean(axis=0).tolist()
+		#
+		# for i in range(len(std_dev)):
+		# 	std_dev[i] = sqrt(std_dev[i])
+		#
+		# # # 3. Confidence Interval
+		# ci_hist = []
+		# for error_history in error_histories:
+		# 	ci = []
+		# 	for e_h in error_history:
+		# 		ci.append(e_h[parameter])
+		# 	ci_hist.append(ci)
+		# #
+		# conf_int = np.zeros(len(ci_hist[0]))
+		# ci_hist = np.array(ci_hist)
+		#
+		# for i in range(len(conf_int)):
+		# 	if not self.is_constant(ci_hist[:, i]):
+		# 		conf_int[i] = self.calcConfInt(ci_hist[:, i])
+		# 	else:
+		# 		conf_int[i] = 0
+
+		return errors, errors, errors
 
 	def significant_difference(self,p,q):
 		f = open("tmp.R", "w")

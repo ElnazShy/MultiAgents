@@ -79,7 +79,7 @@ def write_map(file, sim):
 def print_result(main_sim,  time_steps, begin_time, end_time,mcts_mode, parameter_estimation_mode,
  type_selection_mode, iteration_max, max_depth, generated_data_number,
  reuse_tree, PF_add_threshold, PF_weight, type_estimation_mode,mutation_rate ,end_cpu_time, memory_usage,log_file, current_folder,
-                 round_count,po=False):
+                 round_count,oeata_parameter_calculation_mode,po=False):
 
     pickleFile = open(current_folder + "/pickleResults.txt", 'wb')
     dataList = []
@@ -105,6 +105,7 @@ def print_result(main_sim,  time_steps, begin_time, end_time,mcts_mode, paramete
     print "type estimation mode: ", type_estimation_mode
     systemDetails['mutation_rate'] = mutation_rate
     systemDetails['parameter_estimation_mode'] = parameter_estimation_mode
+    systemDetails['oeata_parameter_calculation_mode'] = oeata_parameter_calculation_mode
     print "Parameter Estimation Mode", parameter_estimation_mode
     systemDetails['typeSelectionMode'] = type_selection_mode
     systemDetails['iterationMax'] = iteration_max
@@ -156,23 +157,10 @@ def print_result(main_sim,  time_steps, begin_time, end_time,mcts_mode, paramete
         l3EstimationHistory = u_a.agents_parameter_estimation.l3_estimation.get_estimation_history()
         agentData['l3EstimationHistory'] = l3EstimationHistory
         agentData['l3TypeProbHistory'] = u_a.agents_parameter_estimation.l3_estimation.type_probabilities
-        
+
         l4EstimationHistory = u_a.agents_parameter_estimation.l4_estimation.get_estimation_history()
         agentData['l4EstimationHistory'] = l4EstimationHistory
         agentData['l4TypeProbHistory'] = u_a.agents_parameter_estimation.l4_estimation.type_probabilities
-        
-        l5EstimationHistory = u_a.agents_parameter_estimation.l5_estimation.get_estimation_history()
-        agentData['l5EstimationHistory'] = l5EstimationHistory
-        agentData['l5TypeProbHistory'] = u_a.agents_parameter_estimation.l5_estimation.type_probabilities
-
-
-        f1EstimationHistory = u_a.agents_parameter_estimation.f1_estimation.get_estimation_history()
-        agentData['f1EstimationHistory'] = f1EstimationHistory
-        agentData['f1TypeProbHistory'] = u_a.agents_parameter_estimation.f1_estimation.type_probabilities
-
-        f2EstimationHistory = u_a.agents_parameter_estimation.f2_estimation.get_estimation_history()
-        agentData['f2EstimationHistory'] = f2EstimationHistory
-        agentData['f2TypeProbHistory'] = u_a.agents_parameter_estimation.f2_estimation.type_probabilities
 
         agentDictionary[i] = agentData
         print '----------------------------------------------------------'

@@ -18,7 +18,7 @@ memory_usage = 0
 # Simulation Configuration
 sim_path = None
 
-types = ['l1', 'l2','l3','l4','l5']#, 'f1', 'f2']
+types = ['l1', 'l2', 'l3', 'l4']
 type_selection_mode = None
 
 iteration_max = None
@@ -46,9 +46,9 @@ apply_adversary = False
 if len(sys.argv) > 1:
     input_folder = sys.argv[1]
 else:
-    #input_folder = ""
+    input_folder = ""
     #input_folder = "inputs/test/"
-    input_folder = "inputs/FO_O_POMCP/"
+    #input_folder = "inputs/FO_O_MIN/"
 
 if len(sys.argv) > 2:
     main_output_folder = sys.argv[2]
@@ -99,6 +99,11 @@ for k, v in info.items():
 
     if 'parameter_estimation_mode' in k:
         parameter_estimation_mode = str(v[0][0]).strip()
+
+    if 'oeata_parameter_calculation_mode' in k:
+        oeata_parameter_calculation_mode = str(v[0][0]).strip()
+    else:
+        oeata_parameter_calculation_mode ='MEAN'
 
     if 'generated_data_number' in k:
         generated_data_number = int(v[0][0])
@@ -157,7 +162,7 @@ log_file = log.create_log_file(output_folder + "log.txt")
 
 main_sim = simulator.Simulator()
 main_sim.loader(sim_path, log_file)
-
+# oeata_parameter_calculation_mode = 'MEDIAN'
 
 log_file.write('Grid Size: {} - {} Items - {} Agents - {} Obstacles\n'.\
         format(main_sim.dim_w,len(main_sim.items),len(main_sim.agents),len(main_sim.obstacles)))
@@ -188,7 +193,8 @@ if main_sim.main_agent is not None:
 
     main_sim.main_agent.initialise_visible_agents(main_sim, generated_data_number, PF_add_threshold, train_mode,
                                                   type_selection_mode, parameter_estimation_mode, polynomial_degree,
-                                                  apply_adversary, type_estimation_mode, mutation_rate, do_estimation)
+                                                  apply_adversary, type_estimation_mode, mutation_rate, do_estimation,
+                                                  oeata_parameter_calculation_mode)
 
     uct = UCT.UCT(iteration_max, max_depth, do_estimation, mcts_mode, apply_adversary, enemy=False)
     main_sim.main_agent.initialise_uct(uct)
@@ -200,7 +206,7 @@ if apply_adversary:
         main_sim.enemy_agent.initialise_visible_agents(main_sim, generated_data_number, PF_add_threshold, train_mode,
                                                        type_selection_mode, parameter_estimation_mode, polynomial_degree,
                                                        apply_adversary, type_estimation_mode, mutation_rate,
-                                                       do_estimation)
+                                                       do_estimation.oeata_parameter_calculation_mode)
         enemy_uct = UCT.UCT(iteration_max, max_depth, do_estimation, mcts_mode,apply_adversary, enemy=True )
         main_sim.enemy_agent.initialise_uct(enemy_uct)
 
@@ -311,7 +317,7 @@ if do_estimation:
         iteration_max,max_depth, generated_data_number,reuse_tree,
         PF_add_threshold, PF_weight,
         type_estimation_mode,mutation_rate ,
-        end_cpu_time, memory_usage,log_file,output_folder,round_count)
+        end_cpu_time, memory_usage,log_file,output_folder,round_count,oeata_parameter_calculation_mode)
 
 # except Exception as e:
 #     log_file.write("Following error stop the progress:")

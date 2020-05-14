@@ -33,7 +33,7 @@ class Agent:
     ####################################################################################################################
     def initialise_visible_agents(self, sim, generated_data_number, PF_add_threshold, train_mode , type_selection_mode,
                                   parameter_estimation_mode, polynomial_degree, apply_adversary,
-                                  type_estimation_mode, mutation_rate, do_estimation):
+                                  type_estimation_mode, mutation_rate, do_estimation,oeata_parameter_calculation_mode = None):
 
         agent_index = 0
 
@@ -58,15 +58,12 @@ class Agent:
                 param_estim.estimation_initialisation()
 
                 param_estim.estimation_configuration(type_selection_mode, parameter_estimation_mode, polynomial_degree,
-                                                     type_estimation_mode)
+                                                     type_estimation_mode,oeata_parameter_calculation_mode)
                 if parameter_estimation_mode == 'MIN':
                     param_estim.l1_estimation.train_data.initialise_particle_data_set(u_a, sim)
                     param_estim.l2_estimation.train_data.initialise_particle_data_set(u_a, sim)
                     param_estim.l3_estimation.train_data.initialise_particle_data_set(u_a, sim)
                     param_estim.l4_estimation.train_data.initialise_particle_data_set(u_a, sim)
-                    param_estim.l5_estimation.train_data.initialise_particle_data_set(u_a, sim)
-                    param_estim.f1_estimation.train_data.initialise_particle_data_set(u_a, sim)
-                    param_estim.f2_estimation.train_data.initialise_particle_data_set(u_a, sim)
 
                 u_a.agents_parameter_estimation = param_estim
                 u_a.set_type_parameters(sim)

@@ -48,8 +48,7 @@ if len(sys.argv) > 1:
 else:
     input_folder = ""
 
-
-#input_folder = "inputs/test/"
+input_folder = "inputs/test/"
 #input_folder = "inputs/FO_O_AGA/"
 
 if len(sys.argv) > 2:
@@ -270,18 +269,6 @@ while main_sim.items_left() > 0:
 
     # 5. Updating the PO-MCT and the current belief state
     log_file.write('5) Updating the belief state')
-    # search_tree = uct.update_belief_state(main_sim, search_tree)
-    # for state in search_tree.belief_state:
-    #     print "---------------------------------------"
-    #     state.simulator.draw_map()
-
-    # search_tree = uct.find_new_root(search_tree, main_sim.main_agent.next_action, new_observation)
-    # if len(search_tree.particleFilter) > 0:
-    #
-    #     current_belief_state = copy(search_tree.particleFilter[random.randint(0, len(search_tree.particleFilter) - 1)].simulator)
-    # else:
-    #     print "belief state is empty"
-    # log_file.write(' - OK\n')
     current_belief_state = main_sim
     print "---------------------------------------------------"
     main_sim.main_agent.current_belief_state = current_belief_state

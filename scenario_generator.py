@@ -5,8 +5,6 @@ import csv
 import os
 import sys
 
-from numpy import pi
-
 # (1) CONFIG.CSV - INFORMATION
 # Defining the parameter estimation modes and
 max_depth_set = ['100']
@@ -15,10 +13,10 @@ iteration_max_set = ['100']
 # (2) SIM.CSV - INFORMATION
 # Defining the parameter of simulation file
 possible_directions = ['N','S','E','W']
-agent_types 		= ['l1','l2','l3','l4','l5']
+agent_types 		= ['l1','l2','l3','l4']
 selected_types 		= [False,False]
 
-experiment_type_set = ['POMCP', 'ABU', 'AGA', 'MIN']
+experiment_type_set = ['ABU', 'AGA', 'MIN','POMCP']
 type_estimation_mode_set = ['BPTE']#['LPTE','BTE','BPTE','PTE']
 mutation_rate_set = ['0.2']#,'0.3','0.5','0.7','0.9']
 apply_adversary = False
@@ -81,6 +79,11 @@ def selectType():
 		selected_types[0] = True
 	elif agentType == 'l2':
 		selected_types[1] = True
+	elif agentType == 'l3':
+		selected_types[2] = True
+	elif agentType == 'l4':
+		selected_types[3] = True
+
 
 	return agentType
 
@@ -108,10 +111,10 @@ def main():
 	mainx,mainy,grid = generateRandomNumber(grid,grid_size)
 	mainDirection    = choice(possible_directions)
 	mainType  = 'm'
-	if cooperative_flag:
-		mainLevel = round(random.uniform(0.1,0.5), 3)
-	else:
-		mainLevel = 1
+	#if cooperative_flag:
+	#	mainLevel = round(random.uniform(0.1,0.5), 3)
+	#else:
+	mainLevel = 1
 	MAIN = ['main',mainx,mainy,mainDirection,mainType,mainLevel]
 
 	# e. defining the commum agents

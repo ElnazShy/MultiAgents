@@ -65,11 +65,11 @@ class Agent:
     ####################################################################################################################
     def equals(self, other_agent):
         (x, y) = self.position
-         
+
         (other_x, other_y) = other_agent.get_position()
 
         (other_memory_x, other_memory_y) = other_agent.get_memory()
-        
+
         (memory_x, memory_y) = self.get_memory()
 
         return x == other_x and y == other_y and \
@@ -103,8 +103,8 @@ class Agent:
     ####################################################################################################################
     def is_agent_face_to_item(self, sim):
 
-        dx = [-1, 0, 1,  0]  # 0:W ,  1:N , 2:E  3:S
-        dy = [ 0, 1, 0, -1]
+        dx = [-1, 0, 1, 0]  # 0:W ,  1:N , 2:E  3:S
+        dy = [0, 1, 0, -1]
 
         x_diff = 0
         y_diff = 0
@@ -133,18 +133,17 @@ class Agent:
 
         if 0 <= x + x_diff < sim.dim_w and 0 <= y + y_diff < sim.dim_h and \
                 sim.is_there_item_in_position(x + x_diff, y + y_diff) != -1:
-
             return True, (x + x_diff, y + y_diff)
 
-        return False,(-1,-1)
+        return False, (-1, -1)
 
     ################################################################################################################
 
     def get_memory(self):
         (memory_x, memory_y) = self.memory.get_position()
-         
+
         return memory_x, memory_y
-    
+
     ################################################################################################################
 
     def is_item_nearby(self, items):
@@ -178,8 +177,8 @@ class Agent:
     ################################################################################################################
     # The agent is "near" if it is next to the destination, and the heading is correct
     def is_agent_near_destination(self, item_x, item_y):
-        dx = [-1, 0, 1,  0]  # 0:W ,  1:N , 2:E  3:S
-        dy = [ 0, 1, 0, -1]
+        dx = [-1, 0, 1, 0]  # 0:W ,  1:N , 2:E  3:S
+        dy = [0, 1, 0, -1]
 
         x_diff = 0
         y_diff = 0
@@ -205,7 +204,7 @@ class Agent:
             # Agent face to South
             x_diff = dx[3]
             y_diff = dy[3]
-        
+
         (xI, yI) = (item_x, item_y)
         if (yI == pos[1] and abs(pos[0] - xI) == 1) or (xI == pos[0] and abs(pos[1] - yI) == 1):
             if (pos[0] + x_diff == xI) and (pos[1] + y_diff == yI):
@@ -258,7 +257,7 @@ class Agent:
             return
 
     ################################################################################################################
-    def set_actions_probabilities(self,action):
+    def set_actions_probabilities(self, action):
 
         if action == 'L':
             self.actions_probability['L'] = 0.96
@@ -373,7 +372,7 @@ class Agent:
             return 0
 
         if direction == 'S':
-            return 3*np.pi/2
+            return 3 * np.pi / 2
 
     ################################################################################################################
     def get_agent_direction(self):
@@ -392,7 +391,7 @@ class Agent:
 
     ################################################################################################################
     def change_position_direction(self, dim_w, dim_h):
-        dx = [-1, 0, 1,  0]  # 0:W ,  6AGA_O_2:N , 2:E  3:S
+        dx = [-1, 0, 1, 0]  # 0:W ,  6AGA_O_2:N , 2:E  3:S
         dy = [0, 1, 0, -1]
 
         x_diff = 0
@@ -428,7 +427,7 @@ class Agent:
     ################################################################################################################
     def new_position_with_given_action(self, dim_w, dim_h, action):
 
-        dx = [-1, 0, 1,  0]  # 0:W ,  1:N , 2:E  3:S
+        dx = [-1, 0, 1, 0]  # 0:W ,  1:N , 2:E  3:S
         dy = [0, 1, 0, -1]
 
         x_diff = 0
@@ -480,8 +479,8 @@ class Agent:
         xt = point_position[0] - my_position[0]
         yt = point_position[1] - my_position[1]
 
-        x = np.cos(direction)*xt + np.sin(direction)*yt
-        y = -np.sin(direction)*xt + np.cos(direction)*yt
+        x = np.cos(direction) * xt + np.sin(direction) * yt
+        y = -np.sin(direction) * xt + np.cos(direction) * yt
 
         return np.arctan2(y, x)
 
@@ -513,7 +512,7 @@ class Agent:
         angle = self.angle * self.co_angle
 
         for item in items:
-                
+
             if not item.loaded:
                 if self.distance(item) < radius:
                     if -angle / 2 <= self.angle_of_gradient(item, self.direction) <= angle / 2:
@@ -524,9 +523,9 @@ class Agent:
                 if self.distance(agents[i]) < radius:
                     if -angle / 2 <= self.angle_of_gradient(agents[i], self.direction) <= angle / 2:
                         self.visible_agents.append(agents[i])
-    
+
     ####################################################################################################################
-    def choose_target_f2(self,items,agents):
+    def choose_target_f2(self, items, agents):
         # 1. Initialising the support variables
         max_level, max_distance = -1, -1
         high_level_agent, furthest_agent = None, None
@@ -574,7 +573,7 @@ class Agent:
             return position.position(-1, -1)
 
     ####################################################################################################################
-    def choose_target_f1(self,items,agents):
+    def choose_target_f1(self, items, agents):
         # 1. Initialising the support variables
         max_distance = -1
         furthest_agent = None
@@ -606,7 +605,7 @@ class Agent:
         else:
             return position.position(-1, -1)
 
-    def choose_target_l5(self,items,agents):
+    def choose_target_l5(self, items, agents):
         # 1. Initialising the support variables
         max_index, max_level = -1, -1
 
@@ -623,7 +622,7 @@ class Agent:
         else:
             return position.position(-1, -1)
 
-    def choose_target_l4(self,items,agents):
+    def choose_target_l4(self, items, agents):
         # 1. Initialising the support variables
         min_index, min_level = -1, 999999
 
@@ -655,7 +654,7 @@ class Agent:
             return self.visible_items[min_index]
 
     ####################################################################################################################
-    def choose_target_l2(self,items,agents):
+    def choose_target_l2(self, items, agents):
         # 1. Initialising the support variables
         max_index, max_level = -1, -1
 
@@ -676,7 +675,7 @@ class Agent:
                     max_level = self.visible_items[i].level
                     max_index = i
 
-            # - return the result if the item was found 
+            # - return the result if the item was found
             if max_index > -1:
                 return self.visible_items[max_index].position
             # 4. Else return no item
@@ -723,7 +722,7 @@ class Agent:
         return position.position(-1, -1)
 
     ####################################################################################################################
-    def set_target(self,items, agents):
+    def set_target(self, items, agents):
         self.visible_agents_items(items, agents)
         target = self.choose_target(items, agents)
 
@@ -735,35 +734,34 @@ class Agent:
     def choose_target(self, items, agents):
         # 1. Choosing target (item) if type L1
         if self.agent_type == "l1":
-            return self.choose_target_l1(items,agents)
+            return self.choose_target_l1(items, agents)
 
         # 2. Choosing target (item) if type L2
         elif self.agent_type == "l2":
-            return self.choose_target_l2(items,agents)
+            return self.choose_target_l2(items, agents)
 
         # 2. Choosing target (item) if type L2
         elif self.agent_type == "l3":
-            return self.choose_target_l3(items,agents)
+            return self.choose_target_l3(items, agents)
 
         # 2. Choosing target (item) if type L2
         elif self.agent_type == "l4":
-            return self.choose_target_l4(items,agents)
+            return self.choose_target_l4(items, agents)
 
         # 2. Choosing target (item) if type L2
         elif self.agent_type == "l5":
-            return self.choose_target_l5(items,agents)
+            return self.choose_target_l5(items, agents)
 
         # 3. Choosing target (agent) if type F1
         elif self.agent_type == "f1":
-            return self.choose_target_f1(items,agents)
+            return self.choose_target_f1(items, agents)
 
         # 4. Choosing target (agent) if type F2
         elif self.agent_type == "f2":
-            return self.choose_target_f2(items,agents)
+            return self.choose_target_f2(items, agents)
 
         else:
             #   print 'TypeError: Invalid Type\n\ttype',self.agent_type,'is invalid.'
             return position.position(-1, -1)
-
 
 
