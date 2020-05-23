@@ -1,9 +1,11 @@
 from random import randint
-from random import choice, sample
+from random import choice
 import random
 import csv
 import os
 import sys
+
+from numpy import pi
 
 # (1) CONFIG.CSV - INFORMATION
 # Defining the parameter estimation modes and
@@ -16,7 +18,7 @@ possible_directions = ['N','S','E','W']
 agent_types 		= ['l1','l2','l3','l4']
 selected_types 		= [False,False]
 
-experiment_type_set = ['ABU', 'AGA', 'MIN','POMCP']
+experiment_type_set = ['POMCP', 'ABU', 'AGA', 'MIN']
 type_estimation_mode_set = ['BPTE']#['LPTE','BTE','BPTE','PTE']
 mutation_rate_set = ['0.2']#,'0.3','0.5','0.7','0.9']
 apply_adversary = False
@@ -80,26 +82,25 @@ def selectType():
 	elif agentType == 'l2':
 		selected_types[1] = True
 	elif agentType == 'l3':
-		selected_types[2] = True
-	elif agentType == 'l4':
-		selected_types[3] = True
+		selected_types[1] = True
 
+	elif agentType == 'l4':
+		selected_types[1] = True
 
 	return agentType
 
 def main():
 	# 0. Checking the terminal input
-	if len(sys.argv) != 7:
-		print 'usage: python scenario_generator.py [size] [nagents] [nitems] [map_count] [type_estimation_mode] [cooperative_flag]'
+	if len(sys.argv) != 6:
+		print 'usage: python scenario_generator.py [size] [nagents] [nitems] [map_count] [type_estimation_mode]'
 		exit(0)
 
 	# 1. Taking the information
 	size = int(sys.argv[1])
 	nagents = int(sys.argv[2])
 	nitems = int(sys.argv[3])
-	map_count = sys.argv[4]
+	map_count = sys.argv[-1]
 	tem = sys.argv[5]
-	cooperative_flag = True if sys.argv[6] == 'True' else False
 	print 'type estimation mode:',tem
 
 	# 2. Defining the simulation
@@ -111,23 +112,16 @@ def main():
 	mainx,mainy,grid = generateRandomNumber(grid,grid_size)
 	mainDirection    = choice(possible_directions)
 	mainType  = 'm'
-	#if cooperative_flag:
-	#	mainLevel = round(random.uniform(0.1,0.5), 3)
-	#else:
 	mainLevel = 1
 	MAIN = ['main',mainx,mainy,mainDirection,mainType,mainLevel]
 
 	# e. defining the commum agents
-	AGENTS, LEVELS = [], []
+	AGENTS = []
 	for agent_idx in range(nagents):
 		agentx,agenty,grid = generateRandomNumber(grid,grid_size)
 		agentDirection = choice(possible_directions)
-		agentType = choice(agent_types)
-		if cooperative_flag:
-			agentLevel = round(random.uniform(0.1,0.5), 3)
-			LEVELS.append(agentLevel)
-		else:
-			agentLevel = round(random.uniform(0.5,1), 3)
+		agentType = selectType()
+		agentLevel = round(random.uniform(0.5,1), 3)
 		agentRadius = round(random.uniform(0.5,1), 3)
 		agentAngle = round(random.uniform(0.5,1), 3)
 		AGENTS.append(['agent'+ str(agent_idx),str(agent_idx),agentx,agenty,agentDirection,agentType,agentLevel,agentRadius,agentAngle])
@@ -135,11 +129,7 @@ def main():
 	ITEMS = []
 	for item_idx in range(nitems):
 		itemx,itemy,grid = generateRandomNumber(grid,grid_size)
-		if cooperative_flag:
-			sampledLevels = sample(LEVELS,2)
-			itemLevel = round(random.uniform(max(sampledLevels)+0.001,sum(sampledLevels))-0.001, 3)
-		else:
-			itemLevel = round(random.uniform(0,0.8), 3)
+		itemLevel = round(random.uniform(0,0.8), 3)
 		ITEMS.append(['item'+ str(item_idx),itemx,itemy,itemLevel])
 
 	# 3. Creating the possible configuration files
