@@ -3,6 +3,7 @@
 *.pdf
 *Pickle
 *.R
+*.csv
 __pycache__/
 *.xml
 .idea/*
