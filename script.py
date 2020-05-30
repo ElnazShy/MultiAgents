@@ -12,13 +12,16 @@ number_of_tests = 10
 
 
 square_grid_size = ['10']
-number_of_agents = ['5']#,'2']#,'3','5','7','10']
+number_of_agents = ['3','5']#,'2']#,'3','5','7','10']
 number_of_items = ['10']#,'20','25']
 
 # 1. Defining the experiment type# 1. Defining the experiment type
 experiment_type_set = ['POMCP','MIN','ABU','AGA']
 
 type_estimation_mode_set = ['BPTE']
+
+coop_flag = 'True'
+
 # 2. Starting the experiment
 test_number = 0
 while test_number < number_of_tests:
@@ -30,7 +33,7 @@ while test_number < number_of_tests:
                     print '- Generating Scenario'
                     #'LD_PRELOAD=/usr/shared_apps/packages/anaconda2-2.5.0/lib/libmkl_core.so /usr/shared_apps/packages/anaconda2-2.5.0/bin/'
                     scenario_generator = 'python scenario_generator.py ' + size + ' ' + nagents +\
-                     ' ' + nitems + ' ' + str(map_count) + ' ' + tem + ' True'
+                     ' ' + nitems + ' ' + str(map_count) + ' ' + tem + ' ' + coop_flag
                     print '> '+ scenario_generator
                     experiment_dir = os.system(scenario_generator)
                     map_count += 1

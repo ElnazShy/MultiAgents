@@ -228,7 +228,7 @@ time_step = 0
 main_sim.draw_map()
 round = 1
 while round <= round_count:
-    while main_sim.items_left() > 0:
+    while main_sim.items_left() > 0 and time_step < 200:
         items_number = main_sim.items_left()
         progress = 100 * (len(main_sim.items) - main_sim.items_left())/len(main_sim.items)
         sys.stdout.write("Experiment progress: %d%% | step: %d   \r" % (progress,time_step) )
