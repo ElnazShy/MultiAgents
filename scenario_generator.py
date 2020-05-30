@@ -1,5 +1,5 @@
-from random import randint
-from random import choice
+import itertools
+from random import choice, sample, randint
 import random
 import csv
 import os
@@ -52,6 +52,22 @@ def create_config_file(current_folder,parameter_estimation_mode,mcts_mode,train_
 		writer.writerows([['sim_path', 'sim.csv']])
 
 
+def generateRandomMapPosition(grid,gridValue):
+	while True:
+		testXValue = randint(1, gridValue - 2)
+		testYValue = randint(1, gridValue - 2)
+
+		"""if grid[testXValue][testYValue] + grid[testXValue][testYValue+1]\
+		+ grid[testXValue+1][testYValue+1] + grid[testXValue+1][testYValue]\
+		+ grid[testXValue+1][testYValue-1] + grid[testXValue][testYValue-1]\
+		+ grid[testXValue-1][testYValue-1] + grid[testXValue-1][testYValue]\
+		+ grid[testXValue-1][testYValue+1] == 0:
+			return testXValue,testYValue"""
+		if grid[testXValue][testYValue] + grid[testXValue][testYValue+1]\
+		+ grid[testXValue][testYValue-1] + grid[testXValue+1][testYValue]\
+		+ grid[testXValue-1][testYValue-1]  == 0:
+			return testXValue,testYValue
+
 def generateRandomNumber (grid,gridValue):
 	while True:
 		testXValue = randint(0, gridValue - 1)
@@ -91,16 +107,17 @@ def selectType():
 
 def main():
 	# 0. Checking the terminal input
-	if len(sys.argv) != 6:
-		print 'usage: python scenario_generator.py [size] [nagents] [nitems] [map_count] [type_estimation_mode]'
+	if len(sys.argv) != 7:
+		print 'usage: python scenario_generator.py [size] [nagents] [nitems] [map_count] [type_estimation_mode] [coop flag]'
 		exit(0)
 
 	# 1. Taking the information
 	size = int(sys.argv[1])
 	nagents = int(sys.argv[2])
 	nitems = int(sys.argv[3])
-	map_count = sys.argv[-1]
+	map_count = sys.argv[4]
 	tem = sys.argv[5]
+	coop_flag = True if sys.argv[6] == 'True' else False
 	print 'type estimation mode:',tem
 
 	# 2. Defining the simulation
@@ -109,27 +126,53 @@ def main():
 	GRID = ['grid',grid_size,grid_size]
 
 	# d. defining the main agent parameters
-	mainx,mainy,grid = generateRandomNumber(grid,grid_size)
 	mainDirection    = choice(possible_directions)
 	mainType  = 'm'
-	mainLevel = 1
+
+	mainx,mainy,grid = generateRandomNumber(grid,grid_size)
+	if coop_flag is True:
+		mainLevel = round(random.uniform(0.1,1.0), 3)
+	else:
+		mainLevel = 1
+
 	MAIN = ['main',mainx,mainy,mainDirection,mainType,mainLevel]
 
 	# e. defining the commum agents
-	AGENTS = []
+	AGENTS, LEVELS = [], []
 	for agent_idx in range(nagents):
-		agentx,agenty,grid = generateRandomNumber(grid,grid_size)
 		agentDirection = choice(possible_directions)
 		agentType = selectType()
-		agentLevel = round(random.uniform(0.5,1), 3)
+
+		agentx,agenty,grid = generateRandomNumber(grid,grid_size)
+		if coop_flag is True:
+			agentLevel = round(random.uniform(0.1,1.0), 3)
+			LEVELS.append(agentLevel)
+		else:
+			agentLevel = round(random.uniform(0.5,1), 3)
+
 		agentRadius = round(random.uniform(0.5,1), 3)
 		agentAngle = round(random.uniform(0.5,1), 3)
 		AGENTS.append(['agent'+ str(agent_idx),str(agent_idx),agentx,agenty,agentDirection,agentType,agentLevel,agentRadius,agentAngle])
+	
+	if coop_flag and len(AGENTS) >= 4:
+		min_combination = [list(c) for c in list(itertools.combinations(LEVELS, 4))]
+		for i in range(len(min_combination)):
+			min_combination[i] = sum(min_combination[i])
+		min_combination = min(min_combination) if min_combination <= 1 else 1.0
+	else:
+		min_combination = 1.0
 
 	ITEMS = []
 	for item_idx in range(nitems):
-		itemx,itemy,grid = generateRandomNumber(grid,grid_size)
-		itemLevel = round(random.uniform(0,0.8), 3)
+		if coop_flag is True:
+			itemx,itemy = generateRandomMapPosition(grid,grid_size)
+			grid[itemx][itemy] = 1
+			sampleLevels = sample(LEVELS,2)
+			itemLevel = round(random.uniform(max(sampleLevels),sum(sampleLevels)),3)\
+				if sum(sampleLevels) <= 1 else round(random.uniform(max(sampleLevels),min_combination),3)
+		else:
+			itemx,itemy,grid = generateRandomNumber(grid,grid_size)
+			itemLevel = round(random.uniform(0,0.8), 3)
 		ITEMS.append(['item'+ str(item_idx),itemx,itemy,itemLevel])
 
 	# 3. Creating the possible configuration files

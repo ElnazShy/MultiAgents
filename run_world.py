@@ -1,7 +1,7 @@
 # Python Imports
 from collections import defaultdict
 
-import psutil
+#import psutil
 import sys
 import time
 
@@ -173,8 +173,8 @@ log.write_map(log_file,main_sim)
 # ============= Simulation Initialization ==================
 # 1. Log Variables Init
 begin_time = time.time()
-begin_cpu_time = psutil.cpu_times()
-used_mem_before = psutil.virtual_memory().used
+begin_cpu_time = 0 #psutil.cpu_times()
+used_mem_before = 0 #psutil.virtual_memory().used
 
 # 2. Sim estimation Init
 polynomial_degree = 4
@@ -307,8 +307,8 @@ sys.stdout.write("Experiment progress: %d%% | step: %d   \n" % (progress,time_st
 
 # ============= Finish Simulation ==================
 end_time = time.time()
-used_mem_after = psutil.virtual_memory().used
-end_cpu_time = psutil.cpu_times()
+used_mem_after = 0 #psutil.virtual_memory().used
+end_cpu_time = 0 #psutil.cpu_times()
 memory_usage = used_mem_after - used_mem_before
 
 if do_estimation:
