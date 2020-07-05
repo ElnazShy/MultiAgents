@@ -31,7 +31,7 @@ class Agent:
         self.uct = uct
 
     ####################################################################################################################
-    def initialise_visible_agents(self, sim, generated_data_number, PF_add_threshold, train_mode , type_selection_mode,
+    def initialise_visible_agents(self, sim, agent_types, generated_data_number, PF_add_threshold, train_mode , type_selection_mode,
                                   parameter_estimation_mode, polynomial_degree, apply_adversary,
                                   type_estimation_mode, mutation_rate, do_estimation,oeata_parameter_calculation_mode = None):
 
@@ -51,7 +51,7 @@ class Agent:
                 u_a.set_parameters(sim, agent.level, agent.radius, agent.angle)
 
             else:
-                param_estim = parameter_estimation.ParameterEstimation(generated_data_number, PF_add_threshold,
+                param_estim = parameter_estimation.ParameterEstimation(agent_types,generated_data_number, PF_add_threshold,
                                                                        train_mode,
                                                                        apply_adversary, mutation_rate)
 
@@ -60,10 +60,11 @@ class Agent:
                 param_estim.estimation_configuration(type_selection_mode, parameter_estimation_mode, polynomial_degree,
                                                      type_estimation_mode,oeata_parameter_calculation_mode)
                 if parameter_estimation_mode == 'MIN':
-                    param_estim.l1_estimation.train_data.initialise_particle_data_set(u_a, sim)
-                    param_estim.l2_estimation.train_data.initialise_particle_data_set(u_a, sim)
-                    param_estim.l3_estimation.train_data.initialise_particle_data_set(u_a, sim)
-                    param_estim.l4_estimation.train_data.initialise_particle_data_set(u_a, sim)
+                    for te in param_estim.type_estimations:
+                        te.train_data.initialise_particle_data_set(u_a, sim)
+                    # param_estim.l2_estimation.train_data.initialise_particle_data_set(u_a, sim)
+                    # param_estim.l3_estimation.train_data.initialise_particle_data_set(u_a, sim)
+                    # param_estim.l4_estimation.train_data.initialise_particle_data_set(u_a, sim)
 
                 u_a.agents_parameter_estimation = param_estim
                 u_a.set_type_parameters(sim)

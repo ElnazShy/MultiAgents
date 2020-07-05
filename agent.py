@@ -605,7 +605,28 @@ class Agent:
         else:
             return position.position(-1, -1)
 
-    def choose_target_l5(self, items, agents):
+    ################################################################################################################
+    def choose_target_l6(self): # Search for lower level than its lever in highest distance
+        max_index, max_distance = -1, -1
+        lost_indexes = []
+
+        # 2. Searching for max distance item
+        while True:
+            for i in range(0, len(self.visible_items)):
+                if self.distance(self.visible_items[i]) > max_distance and i not in lost_indexes:
+                    max_distance = self.distance(self.visible_items[i])
+                    max_index = i
+
+            if max_index == -1:
+                return position.position(-1, -1)
+            if self.visible_items[max_index].level > self.level:
+                return self.visible_items[max_index].position
+            else:
+                lost_indexes.append(max_index)
+                max_index, max_distance = -1, -1
+
+    ################################################################################################################
+    def choose_target_l5(self): # 2. Searching for highest level item above own level
         # 1. Initialising the support variables
         max_index, max_level = -1, -1
 
@@ -622,11 +643,12 @@ class Agent:
         else:
             return position.position(-1, -1)
 
-    def choose_target_l4(self, items, agents):
+    ################################################################################################################
+    def choose_target_l4(self): # 2. Searching for lowest level item
         # 1. Initialising the support variables
         min_index, min_level = -1, 999999
+        
 
-        # 2. Searching for lowest level item
         for i in range(0, len(self.visible_items)):
             if self.visible_items[i].level < min_level:
                 min_level = self.visible_items[i].level
@@ -638,23 +660,29 @@ class Agent:
         else:
             return position.position(-1, -1)
 
-    def choose_target_l3(self, items, agents):
+    ################################################################################################################
+    def choose_target_l3(self): # 2. Searching for min distance item and lower level
         # 1. Initialising the support variables
         min_index, min_distance = -1, 999999
+        not_checked_items = copy(self.visible_items)
 
-        # 2. Searching for min distance item
-        for i in range(0, len(self.visible_items)):
-            if self.distance(self.visible_items[i]) < min_distance:
-                min_distance = self.distance(self.visible_items[i])
-                min_index = i
+        # 2. Searching for max distance item
+        while True:
+            for i in range(0, len(not_checked_items)):
+                if self.distance(not_checked_items[i]) < min_distance:
+                    min_distance = self.distance(not_checked_items[i])
+                    min_index = i
 
-        if min_index == -1:
-            return position.position(-1, -1)
-        else:
-            return self.visible_items[min_index]
+            if min_index == -1:
+                return position.position(-1, -1)
+            if not_checked_items[min_index].level < self.level:
+                return not_checked_items[min_index].position
+            else:
+                not_checked_items.remove(not_checked_items[min_index])
+                min_index, min_distance = -1, 999999
 
     ####################################################################################################################
-    def choose_target_l2(self, items, agents):
+    def choose_target_l2(self): # 2. Searching for highest level item below own level
         # 1. Initialising the support variables
         max_index, max_level = -1, -1
 
@@ -682,25 +710,8 @@ class Agent:
             else:
                 return position.position(-1, -1)
 
-    # ####################################################################################################################
-    # def choose_target_l1(self,items,agents):
-    #     # 1. Initialising the support variables
-    #     max_index, max_distance = -1, -1
-    #
-    #     # 2. Searching for max distance item
-    #     for i in range(0, len(self.visible_items)):
-    #         if self.distance(self.visible_items[i]) > max_distance:
-    #             max_distance = self.distance(self.visible_items[i])
-    #             max_index = i
-    #
-    #     # 3. Returning the result
-    #     if max_index > -1:
-    #         return self.visible_items[max_index]
-    #     else:
-    #         return position.position(-1, -1)
     ####################################################################################################################
-    def choose_target_l1(self, items, agents):
-        # 1. Initialising the support variables
+    def choose_target_l1(self):
         max_index, max_distance = -1, -1
         lost_indexes = []
 
@@ -713,15 +724,14 @@ class Agent:
 
             if max_index == -1:
                 return position.position(-1, -1)
-            if self.visible_items[max_index] < self.level:
+            if self.visible_items[max_index].level < self.level:
                 return self.visible_items[max_index]
             else:
                 lost_indexes.append(max_index)
                 max_index, max_distance = -1, -1
 
-        return position.position(-1, -1)
+    ###################################################################################################################
 
-    ####################################################################################################################
     def set_target(self, items, agents):
         self.visible_agents_items(items, agents)
         target = self.choose_target(items, agents)
@@ -734,27 +744,27 @@ class Agent:
     def choose_target(self, items, agents):
         # 1. Choosing target (item) if type L1
         if self.agent_type == "l1":
-            return self.choose_target_l1(items, agents)
+            return self.choose_target_l1()
 
         # 2. Choosing target (item) if type L2
         elif self.agent_type == "l2":
-            return self.choose_target_l2(items, agents)
+            return self.choose_target_l2()
 
         # 2. Choosing target (item) if type L2
         elif self.agent_type == "l3":
-            return self.choose_target_l3(items, agents)
+            return self.choose_target_l3()
 
         # 2. Choosing target (item) if type L2
         elif self.agent_type == "l4":
-            return self.choose_target_l4(items, agents)
+            return self.choose_target_l4()
 
         # 2. Choosing target (item) if type L2
         elif self.agent_type == "l5":
-            return self.choose_target_l5(items, agents)
+            return self.choose_target_l5()
 
         # 3. Choosing target (agent) if type F1
-        elif self.agent_type == "f1":
-            return self.choose_target_f1(items, agents)
+        elif self.agent_type == "l6":
+            return self.choose_target_l6()
 
         # 4. Choosing target (agent) if type F2
         elif self.agent_type == "f2":

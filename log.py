@@ -6,7 +6,7 @@ from random import randint
 
 def get_input_folder():
     return
-    # return "inputs/FO_O_MIN/"
+    # return "inputs/FO_O_MIN_20/"
     # return "po_inputs/PO_O_MIN/"
 
 
@@ -142,28 +142,15 @@ def print_result(main_sim,  time_steps, begin_time, end_time,mcts_mode, paramete
         agentData['trueParameters'] = trueParameters
 
         agentData['maxProbability'] = u_a.agents_parameter_estimation.get_highest_type_probability()
+        for te in u_a.agents_parameter_estimation.type_estimations:
+            agentData['EstimationHistory'] = te.get_estimation_history()
+            agentData['TypeProbHistory'] = te.type_probabilities
 
-        l1EstimationHistory = u_a.agents_parameter_estimation.l1_estimation.get_estimation_history()
-        agentData['l1EstimationHistory'] = l1EstimationHistory
-        agentData['l1TypeProbHistory'] = u_a.agents_parameter_estimation.l1_estimation.type_probabilities
-
-        l2EstimationHistory = u_a.agents_parameter_estimation.l2_estimation.get_estimation_history()
-        agentData['l2EstimationHistory'] = l2EstimationHistory
-        agentData['l2TypeProbHistory'] = u_a.agents_parameter_estimation.l2_estimation.type_probabilities
-        # print "Parameter Estimation History: ", agentData['l2EstimationHistory']
-        agentData['l2TypeProbHistory'] = u_a.agents_parameter_estimation.l2_estimation.type_probabilities
-        # print "l2 Type Prob History: ", agentData['l2TypeProbHistory']
-
-        l3EstimationHistory = u_a.agents_parameter_estimation.l3_estimation.get_estimation_history()
-        agentData['l3EstimationHistory'] = l3EstimationHistory
-        agentData['l3TypeProbHistory'] = u_a.agents_parameter_estimation.l3_estimation.type_probabilities
-
-        l4EstimationHistory = u_a.agents_parameter_estimation.l4_estimation.get_estimation_history()
-        agentData['l4EstimationHistory'] = l4EstimationHistory
-        agentData['l4TypeProbHistory'] = u_a.agents_parameter_estimation.l4_estimation.type_probabilities
 
         agentDictionary[i] = agentData
         print '----------------------------------------------------------'
+
+
     dataList.append(systemDetails)
     dataList.append(agentDictionary)
 
