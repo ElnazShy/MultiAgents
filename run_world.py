@@ -1,7 +1,7 @@
 # Python Imports
 from collections import defaultdict
 
-#import psutil
+import psutil
 import sys
 import time
 
@@ -9,6 +9,8 @@ import time
 import log
 import simulator
 import UCT
+import gc
+
 
 # ============= Set Configurations ============
 # System Configuration
@@ -18,7 +20,7 @@ memory_usage = 0
 # Simulation Configuration
 sim_path = None
 
-types = ['l1', 'l2', 'l3', 'l4']
+
 type_selection_mode = None
 
 iteration_max = None
@@ -48,7 +50,7 @@ if len(sys.argv) > 1:
 else:
     input_folder = ""
     #input_folder = "inputs/test/"
-    #input_folder = "inputs/FO_O_MIN/"
+    input_folder = "inputs/FO_O_ABU/"
 
 if len(sys.argv) > 2:
     main_output_folder = sys.argv[2]
@@ -132,15 +134,20 @@ for k, v in info.items():
     if 'PF_weight' in k:
         PF_weight = float(v[0][0])
 
+    if 'agent_types' in k:
+        agent_types = (v[0][0])
+        print agent_types
+
     if 'apply_adversary' in k:
         if v[0][0] == 'False':
             apply_adversary = False
         else:
             apply_adversary = True
-
+#types = ['l1', 'l2','l3']
+agent_types 		= ['l1','l2','l3','l4']#,'l5','l6']
 sim_configuration = \
     {'sim_path':sim_path,
-    'types':types,
+    'types':agent_types,
     'type_selection_mode':type_selection_mode,
     'iteration_max':iteration_max,
     'max_depth':max_depth,
@@ -162,7 +169,7 @@ log_file = log.create_log_file(output_folder + "log.txt")
 
 main_sim = simulator.Simulator()
 main_sim.loader(sim_path, log_file)
-# oeata_parameter_calculation_mode = 'MEDIAN'
+oeata_parameter_calculation_mode = 'MEAN'
 
 log_file.write('Grid Size: {} - {} Items - {} Agents - {} Obstacles\n'.\
         format(main_sim.dim_w,len(main_sim.items),len(main_sim.agents),len(main_sim.obstacles)))
@@ -173,8 +180,8 @@ log.write_map(log_file,main_sim)
 # ============= Simulation Initialization ==================
 # 1. Log Variables Init
 begin_time = time.time()
-begin_cpu_time = 0 #psutil.cpu_times()
-used_mem_before = 0 #psutil.virtual_memory().used
+begin_cpu_time = psutil.cpu_times()
+used_mem_before = psutil.virtual_memory().used
 
 # 2. Sim estimation Init
 polynomial_degree = 4
@@ -184,6 +191,8 @@ search_tree = None
 enemy_search_tree = None
 enemy_action_prob = None
 
+#agent_types = ['l1','l2','l3','l4']
+
 # try:
 
 # 3. Ad hoc Agents
@@ -191,7 +200,7 @@ if main_sim.main_agent is not None:
     main_agent = main_sim.main_agent
     search_tree = None
 
-    main_sim.main_agent.initialise_visible_agents(main_sim, generated_data_number, PF_add_threshold, train_mode,
+    main_sim.main_agent.initialise_visible_agents(main_sim, agent_types ,generated_data_number, PF_add_threshold, train_mode,
                                                   type_selection_mode, parameter_estimation_mode, polynomial_degree,
                                                   apply_adversary, type_estimation_mode, mutation_rate, do_estimation,
                                                   oeata_parameter_calculation_mode)
@@ -206,7 +215,7 @@ if apply_adversary:
         main_sim.enemy_agent.initialise_visible_agents(main_sim, generated_data_number, PF_add_threshold, train_mode,
                                                        type_selection_mode, parameter_estimation_mode, polynomial_degree,
                                                        apply_adversary, type_estimation_mode, mutation_rate,
-                                                       do_estimation.oeata_parameter_calculation_mode)
+                                                       do_estimation,oeata_parameter_calculation_mode)
         enemy_uct = UCT.UCT(iteration_max, max_depth, do_estimation, mcts_mode,apply_adversary, enemy=True )
         main_sim.enemy_agent.initialise_uct(enemy_uct)
 
@@ -228,7 +237,8 @@ time_step = 0
 main_sim.draw_map()
 round = 1
 while round <= round_count:
-    while main_sim.items_left() > 0 and time_step < 200:
+    while main_sim.items_left() > 0:
+        gc.collect()
         items_number = main_sim.items_left()
         progress = 100 * (len(main_sim.items) - main_sim.items_left())/len(main_sim.items)
         sys.stdout.write("Experiment progress: %d%% | step: %d   \r" % (progress,time_step) )
@@ -285,7 +295,7 @@ while round <= round_count:
             item_loaded = False
 
         if do_estimation:
-            main_sim.main_agent.estimation(time_step, main_sim,enemy_action_prob,types)
+            main_sim.main_agent.estimation(time_step, main_sim,enemy_action_prob,agent_types)
             main_sim.main_agent.update_unknown_agents_parameters(main_sim)
 
         log_file.write(' - OK\n')
@@ -307,8 +317,8 @@ sys.stdout.write("Experiment progress: %d%% | step: %d   \n" % (progress,time_st
 
 # ============= Finish Simulation ==================
 end_time = time.time()
-used_mem_after = 0 #psutil.virtual_memory().used
-end_cpu_time = 0 #psutil.cpu_times()
+used_mem_after = psutil.virtual_memory().used
+end_cpu_time = psutil.cpu_times()
 memory_usage = used_mem_after - used_mem_before
 
 if do_estimation:
